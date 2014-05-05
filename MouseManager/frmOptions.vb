@@ -24,7 +24,6 @@ Public Class frmOptions
     trayIcon.Icon = My.Resources.Icon
     Me.Icon = My.Resources.Icon
     chkStart.Checked = My.Computer.Registry.CurrentUser.OpenSubKey("Software").OpenSubKey("Microsoft").OpenSubKey("Windows").OpenSubKey("CurrentVersion").OpenSubKey("Run", True).GetValue("MouseManager", vbNullString) = Application.ExecutablePath
-    chkEnable.Checked = Application.UserAppDataRegistry.GetValue("Enabled")
     cmdSave.Tag = 0
     If Application.UserAppDataRegistry.SubKeyCount > 0 Then
       For Each Key As String In Application.UserAppDataRegistry.OpenSubKey("Profiles").GetSubKeyNames()
@@ -43,6 +42,7 @@ Public Class frmOptions
       End If
       lvProfiles.Items(iDefault).Tag = True
     End If
+    chkEnable.Checked = Application.UserAppDataRegistry.GetValue("Enabled")
     lblVersion.Text = "v" & My.Application.Info.Version.Major & "." & My.Application.Info.Version.Minor & IIf(My.Application.Info.Version.Build = 0, Nothing, " (build " & My.Application.Info.Version.Build & ")") & IIf(My.Application.Info.Version.Revision = 0, Nothing, " (revision " & My.Application.Info.Version.Revision & ")")
     cmdSave.Enabled = False
   End Sub
