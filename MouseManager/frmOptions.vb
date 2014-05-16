@@ -24,8 +24,8 @@ Public Class frmOptions
     trayIcon.Icon = My.Resources.Icon
     Me.Icon = My.Resources.Icon
     chkStart.Checked = My.Computer.Registry.CurrentUser.OpenSubKey("Software").OpenSubKey("Microsoft").OpenSubKey("Windows").OpenSubKey("CurrentVersion").OpenSubKey("Run", True).GetValue("MouseManager", vbNullString) = Application.ExecutablePath
-    cmdSave.Tag = 0
     If Application.UserAppDataRegistry.SubKeyCount > 0 Then
+      cmdSave.Tag = 0
       For Each Key As String In Application.UserAppDataRegistry.OpenSubKey("Profiles").GetSubKeyNames()
         Dim lvItem As New ListViewItem
         lvItem.Text = Application.UserAppDataRegistry.OpenSubKey("Profiles").OpenSubKey(Key).GetValue("Button1").ToString
@@ -34,6 +34,7 @@ Public Class frmOptions
       Next
       If lvProfiles.Items.Count <> 0 Then tmrInit.Enabled = True
       Dim iDefault As Integer = CInt(Application.UserAppDataRegistry.OpenSubKey("Profiles").GetValue("Default"))
+      chkEnable.Checked = Application.UserAppDataRegistry.GetValue("Enabled")
       If chkEnable.Checked Then
         lvProfiles.Items(iDefault).Checked = True
         StrToKeys(lvProfiles.CheckedItems(0).Text, Button1Action)
@@ -41,8 +42,9 @@ Public Class frmOptions
         cmdSave.Tag = 1
       End If
       lvProfiles.Items(iDefault).Tag = True
+    Else
+      cmdSave.Tag = Nothing
     End If
-    chkEnable.Checked = Application.UserAppDataRegistry.GetValue("Enabled")
     lblVersion.Text = "v" & My.Application.Info.Version.Major & "." & My.Application.Info.Version.Minor & IIf(My.Application.Info.Version.Build = 0, Nothing, " (build " & My.Application.Info.Version.Build & ")") & IIf(My.Application.Info.Version.Revision = 0, Nothing, " (revision " & My.Application.Info.Version.Revision & ")")
     cmdSave.Enabled = False
   End Sub

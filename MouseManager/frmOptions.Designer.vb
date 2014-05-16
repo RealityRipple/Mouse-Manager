@@ -45,6 +45,8 @@ Partial Class frmOptions
     Me.lblTitle = New System.Windows.Forms.Label()
     Me.lblVersion = New System.Windows.Forms.Label()
     Me.lblAbout = New System.Windows.Forms.Label()
+    Me.cmdDonate = New System.Windows.Forms.Button()
+    Me.lblWebsite = New MouseManager.LinkLabel()
     Me.mnuTray = New System.Windows.Forms.ContextMenu()
     Me.mnuProfiles = New System.Windows.Forms.MenuItem()
     Me.mnuManagement = New System.Windows.Forms.MenuItem()
@@ -56,8 +58,6 @@ Partial Class frmOptions
     Me.tmrDetection = New System.Windows.Forms.Timer(Me.components)
     Me.tmrInit = New System.Windows.Forms.Timer(Me.components)
     Me.pnlManager = New System.Windows.Forms.TableLayoutPanel()
-    Me.cmdDonate = New System.Windows.Forms.Button()
-    Me.lblWebsite = New MouseManager.LinkLabel()
     Me.tbsManager.SuspendLayout()
     Me.tabSettings.SuspendLayout()
     Me.pnlSettings.SuspendLayout()
@@ -73,7 +73,7 @@ Partial Class frmOptions
     Me.tbsManager.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
             Or System.Windows.Forms.AnchorStyles.Left) _
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-    Me.pnlManager.SetColumnSpan(Me.tbsManager, 3)
+    Me.pnlManager.SetColumnSpan(Me.tbsManager, 2)
     Me.tbsManager.Controls.Add(Me.tabSettings)
     Me.tbsManager.Controls.Add(Me.tabProfiles)
     Me.tbsManager.Controls.Add(Me.tabAbout)
@@ -304,16 +304,18 @@ Partial Class frmOptions
     Me.pnlAbout.Controls.Add(Me.lblTitle, 0, 0)
     Me.pnlAbout.Controls.Add(Me.lblVersion, 0, 1)
     Me.pnlAbout.Controls.Add(Me.lblAbout, 0, 2)
-    Me.pnlAbout.Controls.Add(Me.lblWebsite, 0, 3)
+    Me.pnlAbout.Controls.Add(Me.cmdDonate, 0, 3)
+    Me.pnlAbout.Controls.Add(Me.lblWebsite, 0, 4)
     Me.pnlAbout.Dock = System.Windows.Forms.DockStyle.Fill
     Me.pnlAbout.Location = New System.Drawing.Point(0, 0)
     Me.pnlAbout.Margin = New System.Windows.Forms.Padding(0)
     Me.pnlAbout.Name = "pnlAbout"
-    Me.pnlAbout.RowCount = 4
-    Me.pnlAbout.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
-    Me.pnlAbout.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25.0!))
-    Me.pnlAbout.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
-    Me.pnlAbout.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25.0!))
+    Me.pnlAbout.RowCount = 5
+    Me.pnlAbout.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100.0!))
+    Me.pnlAbout.RowStyles.Add(New System.Windows.Forms.RowStyle())
+    Me.pnlAbout.RowStyles.Add(New System.Windows.Forms.RowStyle())
+    Me.pnlAbout.RowStyles.Add(New System.Windows.Forms.RowStyle())
+    Me.pnlAbout.RowStyles.Add(New System.Windows.Forms.RowStyle())
     Me.pnlAbout.Size = New System.Drawing.Size(308, 167)
     Me.pnlAbout.TabIndex = 1
     '
@@ -322,7 +324,7 @@ Partial Class frmOptions
     Me.lblTitle.Anchor = System.Windows.Forms.AnchorStyles.None
     Me.lblTitle.AutoSize = True
     Me.lblTitle.Font = New System.Drawing.Font("Segoe UI", 27.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-    Me.lblTitle.Location = New System.Drawing.Point(9, 4)
+    Me.lblTitle.Location = New System.Drawing.Point(9, 6)
     Me.lblTitle.Name = "lblTitle"
     Me.lblTitle.Size = New System.Drawing.Size(289, 50)
     Me.lblTitle.TabIndex = 0
@@ -333,7 +335,8 @@ Partial Class frmOptions
     '
     Me.lblVersion.Anchor = System.Windows.Forms.AnchorStyles.Right
     Me.lblVersion.AutoSize = True
-    Me.lblVersion.Location = New System.Drawing.Point(277, 64)
+    Me.lblVersion.Location = New System.Drawing.Point(277, 67)
+    Me.lblVersion.Margin = New System.Windows.Forms.Padding(3, 5, 3, 10)
     Me.lblVersion.Name = "lblVersion"
     Me.lblVersion.Size = New System.Drawing.Size(28, 13)
     Me.lblVersion.TabIndex = 1
@@ -344,14 +347,41 @@ Partial Class frmOptions
     '
     Me.lblAbout.Anchor = System.Windows.Forms.AnchorStyles.None
     Me.lblAbout.AutoSize = True
-    Me.lblAbout.Location = New System.Drawing.Point(36, 86)
+    Me.lblAbout.Location = New System.Drawing.Point(90, 95)
+    Me.lblAbout.Margin = New System.Windows.Forms.Padding(3, 5, 3, 5)
     Me.lblAbout.Name = "lblAbout"
-    Me.lblAbout.Size = New System.Drawing.Size(236, 52)
+    Me.lblAbout.Size = New System.Drawing.Size(128, 13)
     Me.lblAbout.TabIndex = 2
-    Me.lblAbout.Text = "by RealityRipple Software" & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "Written June 21, 22, July 2, December 24, 2010," & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "Sep" & _
-    "tember 2, 2011, and March 28, 2014"
+    Me.lblAbout.Text = "by RealityRipple Software"
     Me.lblAbout.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
     Me.lblAbout.UseMnemonic = False
+    '
+    'cmdDonate
+    '
+    Me.cmdDonate.Anchor = System.Windows.Forms.AnchorStyles.Right
+    Me.cmdDonate.FlatStyle = System.Windows.Forms.FlatStyle.System
+    Me.cmdDonate.Location = New System.Drawing.Point(195, 116)
+    Me.cmdDonate.Name = "cmdDonate"
+    Me.cmdDonate.Size = New System.Drawing.Size(110, 25)
+    Me.cmdDonate.TabIndex = 3
+    Me.cmdDonate.TabStop = False
+    Me.cmdDonate.Text = "Make a Donation"
+    Me.cmdDonate.UseVisualStyleBackColor = True
+    '
+    'lblWebsite
+    '
+    Me.lblWebsite.Anchor = System.Windows.Forms.AnchorStyles.None
+    Me.lblWebsite.AutoSize = True
+    Me.lblWebsite.Cursor = System.Windows.Forms.Cursors.Hand
+    Me.lblWebsite.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!)
+    Me.lblWebsite.ForeColor = System.Drawing.Color.MediumBlue
+    Me.lblWebsite.Location = New System.Drawing.Point(97, 149)
+    Me.lblWebsite.Margin = New System.Windows.Forms.Padding(3, 5, 3, 5)
+    Me.lblWebsite.Name = "lblWebsite"
+    Me.lblWebsite.Size = New System.Drawing.Size(113, 13)
+    Me.lblWebsite.TabIndex = 3
+    Me.lblWebsite.TabStop = True
+    Me.lblWebsite.Text = "http://realityripple.com"
     '
     'mnuTray
     '
@@ -408,22 +438,15 @@ Partial Class frmOptions
     Me.cmdSave.Text = "&Save"
     Me.cmdSave.UseVisualStyleBackColor = True
     '
-    'tmrDetection
-    '
-    '
-    'tmrInit
-    '
-    '
     'pnlManager
     '
-    Me.pnlManager.ColumnCount = 3
+    Me.pnlManager.ColumnCount = 2
     Me.pnlManager.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100.0!))
     Me.pnlManager.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle())
-    Me.pnlManager.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle())
-    Me.pnlManager.Controls.Add(Me.cmdClose, 2, 1)
-    Me.pnlManager.Controls.Add(Me.cmdSave, 1, 1)
+    Me.pnlManager.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20.0!))
+    Me.pnlManager.Controls.Add(Me.cmdClose, 1, 1)
+    Me.pnlManager.Controls.Add(Me.cmdSave, 0, 1)
     Me.pnlManager.Controls.Add(Me.tbsManager, 0, 0)
-    Me.pnlManager.Controls.Add(Me.cmdDonate, 0, 1)
     Me.pnlManager.Dock = System.Windows.Forms.DockStyle.Fill
     Me.pnlManager.Location = New System.Drawing.Point(0, 0)
     Me.pnlManager.Name = "pnlManager"
@@ -433,32 +456,6 @@ Partial Class frmOptions
     Me.pnlManager.RowStyles.Add(New System.Windows.Forms.RowStyle())
     Me.pnlManager.Size = New System.Drawing.Size(334, 242)
     Me.pnlManager.TabIndex = 3
-    '
-    'cmdDonate
-    '
-    Me.cmdDonate.Anchor = System.Windows.Forms.AnchorStyles.Right
-    Me.cmdDonate.FlatStyle = System.Windows.Forms.FlatStyle.System
-    Me.cmdDonate.Location = New System.Drawing.Point(53, 208)
-    Me.cmdDonate.Name = "cmdDonate"
-    Me.cmdDonate.Size = New System.Drawing.Size(110, 25)
-    Me.cmdDonate.TabIndex = 3
-    Me.cmdDonate.TabStop = False
-    Me.cmdDonate.Text = "Make a Donation"
-    Me.cmdDonate.UseVisualStyleBackColor = True
-    '
-    'lblWebsite
-    '
-    Me.lblWebsite.Anchor = System.Windows.Forms.AnchorStyles.None
-    Me.lblWebsite.AutoSize = True
-    Me.lblWebsite.Cursor = System.Windows.Forms.Cursors.Hand
-    Me.lblWebsite.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!)
-    Me.lblWebsite.ForeColor = System.Drawing.Color.MediumBlue
-    Me.lblWebsite.Location = New System.Drawing.Point(97, 147)
-    Me.lblWebsite.Name = "lblWebsite"
-    Me.lblWebsite.Size = New System.Drawing.Size(113, 13)
-    Me.lblWebsite.TabIndex = 3
-    Me.lblWebsite.TabStop = True
-    Me.lblWebsite.Text = "http://realityripple.com"
     '
     'frmOptions
     '
