@@ -12,6 +12,7 @@ Public Class frmOptions
   Private Button1Action As New Collection
   Private Button2Action As New Collection
   Private IntervalShift As Integer
+  Private delKey As Boolean = False
 
   Private Sub frmOptions_FormClosing(ByVal sender As Object, ByVal e As System.Windows.Forms.FormClosingEventArgs) Handles Me.FormClosing
     If e.CloseReason = CloseReason.UserClosing Then
@@ -24,24 +25,41 @@ Public Class frmOptions
     trayIcon.Icon = My.Resources.Icon
     Me.Icon = My.Resources.Icon
     chkStart.Checked = My.Computer.Registry.CurrentUser.OpenSubKey("Software").OpenSubKey("Microsoft").OpenSubKey("Windows").OpenSubKey("CurrentVersion").OpenSubKey("Run", True).GetValue("MouseManager", vbNullString) = Application.ExecutablePath
-    If Application.UserAppDataRegistry.SubKeyCount > 0 Then
-      cmdSave.Tag = 0
-      For Each Key As String In Application.UserAppDataRegistry.OpenSubKey("Profiles").GetSubKeyNames()
-        Dim lvItem As New ListViewItem
-        lvItem.Text = Application.UserAppDataRegistry.OpenSubKey("Profiles").OpenSubKey(Key).GetValue("Button1").ToString
-        lvItem.SubItems.Add(Application.UserAppDataRegistry.OpenSubKey("Profiles").OpenSubKey(Key).GetValue("Button2").ToString)
-        lvProfiles.Items.Add(lvItem)
-      Next
-      If lvProfiles.Items.Count <> 0 Then tmrInit.Enabled = True
-      Dim iDefault As Integer = CInt(Application.UserAppDataRegistry.OpenSubKey("Profiles").GetValue("Default"))
-      chkEnable.Checked = Application.UserAppDataRegistry.GetValue("Enabled")
-      If chkEnable.Checked Then
-        lvProfiles.Items(iDefault).Checked = True
-        StrToKeys(lvProfiles.CheckedItems(0).Text, Button1Action)
-        StrToKeys(lvProfiles.CheckedItems(0).SubItems(1).Text, Button2Action)
-        cmdSave.Tag = 1
+    If My.Computer.Registry.CurrentUser.OpenSubKey("Software").GetSubKeyNames.Contains(Application.CompanyName) AndAlso
+      My.Computer.Registry.CurrentUser.OpenSubKey("Software").OpenSubKey(Application.CompanyName).GetSubKeyNames.Contains(Application.ProductName) Then
+      Dim myParentKey As Microsoft.Win32.RegistryKey = My.Computer.Registry.CurrentUser.OpenSubKey("Software").OpenSubKey(Application.CompanyName).OpenSubKey(Application.ProductName)
+      Dim myRegKey As Microsoft.Win32.RegistryKey = Nothing
+      If (myParentKey.SubKeyCount > 0 AndAlso myParentKey.GetSubKeyNames.Contains("Profiles")) Or (myParentKey.ValueCount > 0) Then
+        myRegKey = myParentKey
+      ElseIf myParentKey.GetSubKeyNames.Contains("1.1.0.0") Then
+        myRegKey = myParentKey.OpenSubKey("1.1.0.0")
+        delKey = True
+      ElseIf myParentKey.GetSubKeyNames.Contains("1.0.0.0") Then
+        myRegKey = myParentKey.OpenSubKey("1.0.0.0")
+        delKey = True
       End If
-      lvProfiles.Items(iDefault).Tag = True
+      If myRegKey IsNot Nothing Then
+        cmdSave.Tag = 0
+        Dim iDefault As Integer = -1
+        If myRegKey.SubKeyCount > 0 AndAlso myRegKey.GetSubKeyNames.Contains("Profiles") Then
+          For Each Key As String In myRegKey.OpenSubKey("Profiles").GetSubKeyNames()
+            Dim lvItem As New ListViewItem
+            lvItem.Text = myRegKey.OpenSubKey("Profiles").OpenSubKey(Key).GetValue("Button1").ToString
+            lvItem.SubItems.Add(myRegKey.OpenSubKey("Profiles").OpenSubKey(Key).GetValue("Button2").ToString)
+            lvProfiles.Items.Add(lvItem)
+          Next
+          If lvProfiles.Items.Count <> 0 Then tmrInit.Enabled = True
+          iDefault = CInt(myRegKey.OpenSubKey("Profiles").GetValue("Default"))
+        End If
+        chkEnable.Checked = myRegKey.GetValue("Enabled")
+        If chkEnable.Checked Then
+          lvProfiles.Items(iDefault).Checked = True
+          StrToKeys(lvProfiles.CheckedItems(0).Text, Button1Action)
+          StrToKeys(lvProfiles.CheckedItems(0).SubItems(1).Text, Button2Action)
+          cmdSave.Tag = 1
+        End If
+        If iDefault > -1 Then lvProfiles.Items(iDefault).Tag = True
+      End If
     Else
       cmdSave.Tag = Nothing
     End If
@@ -214,25 +232,32 @@ Public Class frmOptions
   End Sub
 
   Private Sub cmdSave_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cmdSave.Click
-    Application.UserAppDataRegistry.SetValue("Enabled", chkEnable.Checked)
+    If Not My.Computer.Registry.CurrentUser.OpenSubKey("Software").GetSubKeyNames.Contains(Application.CompanyName) Then My.Computer.Registry.CurrentUser.OpenSubKey("Software", True).CreateSubKey(Application.CompanyName)
+    If Not My.Computer.Registry.CurrentUser.OpenSubKey("Software").OpenSubKey(Application.CompanyName).GetSubKeyNames.Contains(Application.ProductName) Then My.Computer.Registry.CurrentUser.OpenSubKey("Software", True).OpenSubKey(Application.CompanyName, True).CreateSubKey(Application.ProductName)
+    Dim myRegKey = My.Computer.Registry.CurrentUser.OpenSubKey("Software", True).OpenSubKey(Application.CompanyName, True).OpenSubKey(Application.ProductName, True)
+    myRegKey.SetValue("Enabled", chkEnable.Checked)
     If chkStart.Checked Then
       My.Computer.Registry.CurrentUser.OpenSubKey("Software").OpenSubKey("Microsoft").OpenSubKey("Windows").OpenSubKey("CurrentVersion").OpenSubKey("Run", True).SetValue("MouseManager", Application.ExecutablePath)
     Else
       My.Computer.Registry.CurrentUser.OpenSubKey("Software").OpenSubKey("Microsoft").OpenSubKey("Windows").OpenSubKey("CurrentVersion").OpenSubKey("Run", True).DeleteValue("MouseManager", False)
     End If
-    If Application.UserAppDataRegistry.SubKeyCount > 0 Then Application.UserAppDataRegistry.DeleteSubKeyTree("Profiles")
+    If myRegKey.SubKeyCount > 0 AndAlso myRegKey.GetSubKeyNames.Contains("Profiles") Then myRegKey.DeleteSubKeyTree("Profiles")
     If lvProfiles.CheckedItems.Count > 0 Then
-      Application.UserAppDataRegistry.CreateSubKey("Profiles").SetValue("Default", lvProfiles.CheckedIndices(0))
+      myRegKey.CreateSubKey("Profiles").SetValue("Default", lvProfiles.CheckedIndices(0))
       StrToKeys(lvProfiles.CheckedItems(0).Text, Button1Action)
       StrToKeys(lvProfiles.CheckedItems(0).SubItems(1).Text, Button2Action)
     End If
     For I As Integer = 0 To lvProfiles.Items.Count - 1
       Dim sButton1 As String = lvProfiles.Items(I).Text
       Dim sButton2 As String = lvProfiles.Items(I).SubItems(1).Text
-      Application.UserAppDataRegistry.CreateSubKey("Profiles").CreateSubKey("Profile_" & I.ToString).SetValue("Button1", sButton1)
-      Application.UserAppDataRegistry.CreateSubKey("Profiles").CreateSubKey("Profile_" & I.ToString).SetValue("Button2", sButton2)
+      myRegKey.CreateSubKey("Profiles").CreateSubKey("Profile#" & I.ToString).SetValue("Button1", sButton1)
+      myRegKey.CreateSubKey("Profiles").CreateSubKey("Profile#" & I.ToString).SetValue("Button2", sButton2)
     Next
     cmdSave.Enabled = False
+    If delKey Then
+      If myRegKey.GetSubKeyNames.Contains("1.1.0.0") Then myRegKey.DeleteSubKeyTree("1.1.0.0")
+      If myRegKey.GetSubKeyNames.Contains("1.0.0.0") Then myRegKey.DeleteSubKeyTree("1.0.0.0")
+    End If
   End Sub
 
   Private Sub trayIcon_MouseClick(ByVal sender As Object, ByVal e As System.Windows.Forms.MouseEventArgs) Handles trayIcon.MouseClick
