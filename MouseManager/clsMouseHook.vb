@@ -1,12 +1,12 @@
 ﻿Imports System.Runtime.InteropServices
 Public Class MouseHook
-  <DllImport("user32", CharSet:=CharSet.Auto)> _
+  <DllImport("user32", CharSet:=CharSet.Auto, CallingConvention:=CallingConvention.StdCall)> _
   Private Shared Function SetWindowsHookEx(ByVal idHook As Integer, ByVal lpfn As MouseProcDelegate, ByVal hmod As Integer, ByVal dwThreadId As Integer) As Integer
   End Function
-  <DllImport("user32", CharSet:=CharSet.Auto)> _
+  <DllImport("user32", CharSet:=CharSet.Auto, CallingConvention:=CallingConvention.StdCall)> _
   Private Shared Function CallNextHookEx(ByVal hHook As Integer, ByVal nCode As Integer, ByVal wParam As Integer, ByVal lParam As MSLLHOOKSTRUCT) As Integer
   End Function
-  <DllImport("user32", CharSet:=CharSet.Auto)> _
+  <DllImport("user32", CharSet:=CharSet.Auto, CallingConvention:=CallingConvention.StdCall)> _
   Private Shared Function UnhookWindowsHookEx(ByVal hHook As Integer) As Integer
   End Function
   Private Delegate Function MouseProcDelegate(ByVal nCode As Integer, ByVal wParam As Integer, ByRef lParam As MSLLHOOKSTRUCT) As Integer
@@ -27,9 +27,20 @@ Public Class MouseHook
   Private MouseHook As Integer
   Private MouseHookDelegate As MouseProcDelegate
 
-  Public Event Mouse_XButton_Down(ByVal ptLocat As Point, ByVal ButtonNo As UInt32)
-  Public Event Mouse_XButton_Up(ByVal ptLocat As Point, ByVal ButtonNo As UInt32)
-  Public Event Mouse_XButton_DoubleClick(ByVal ptLocat As Point, ByVal ButtonNo As UInt32)
+  Public Class XButtonEventArgs
+    Inherits EventArgs
+    Public Button As UInt32
+    Public Location As Point
+    Public Handled As Boolean
+    Public Sub New(button As UInt32, location As Point)
+      Me.Button = button
+      Me.Location = location
+      Handled = False
+    End Sub
+  End Class
+  Public Event Mouse_XButton_Down(sender As Object, ByRef e As XButtonEventArgs)
+  Public Event Mouse_XButton_Up(sender As Object, ByRef e As XButtonEventArgs)
+  Public Event Mouse_XButton_DoubleClick(sender As Object, ByRef e As XButtonEventArgs)
 
   Public Sub New()
     MouseHookDelegate = New MouseProcDelegate(AddressOf MouseProc)
@@ -40,15 +51,20 @@ Public Class MouseHook
     If (nCode = HC_ACTION) Then
       Select Case wParam
         Case WM_XBUTTONDOWN
-          RaiseEvent Mouse_XButton_Down(lParam.pt, lParam.mouseData)
+          Dim xb As New XButtonEventArgs(lParam.mouseData, lParam.pt)
+          RaiseEvent Mouse_XButton_Down(Me, xb)
+          If xb.Handled Then Return 1
         Case WM_XBUTTONUP
-          RaiseEvent Mouse_XButton_Up(lParam.pt, lParam.mouseData)
+          Dim xb As New XButtonEventArgs(lParam.mouseData, lParam.pt)
+          RaiseEvent Mouse_XButton_Up(Me, xb)
+          If xb.Handled Then Return 1
         Case WM_XBUTTONDBLCLK
-          RaiseEvent Mouse_XButton_DoubleClick(lParam.pt, lParam.mouseData)
+          Dim xb As New XButtonEventArgs(lParam.mouseData, lParam.pt)
+          RaiseEvent Mouse_XButton_DoubleClick(Me, xb)
+          If xb.Handled Then Return 1
       End Select
     End If
-    Return 0
-    'Return CallNextHookEx(MouseHook, nCode, wParam, lParam)
+    Return CallNextHookEx(MouseHook, nCode, wParam, lParam)
   End Function
 
   Protected Overrides Sub Finalize()

@@ -9,8 +9,8 @@ Public Class frmOptions
   Public Const KEYEVENTF_KEYDOWN As Long = &H0
   Public Const KEYEVENTF_KEYUP As Long = &H2
   Private WithEvents mHook As MouseHook
-  Private Button1Action As New Collection
-  Private Button2Action As New Collection
+  Private Button1Action As New List(Of Keys)
+  Private Button2Action As New List(Of Keys)
   Private IntervalShift As Integer
   Private delKey As Boolean = False
 
@@ -54,8 +54,8 @@ Public Class frmOptions
         chkEnable.Checked = myRegKey.GetValue("Enabled")
         If chkEnable.Checked Then
           lvProfiles.Items(iDefault).Checked = True
-          StrToKeys(lvProfiles.CheckedItems(0).Text, Button1Action)
-          StrToKeys(lvProfiles.CheckedItems(0).SubItems(1).Text, Button2Action)
+          Button1Action = StrToKeys(lvProfiles.CheckedItems(0).Text)
+          Button2Action = StrToKeys(lvProfiles.CheckedItems(0).SubItems(1).Text)
           cmdSave.Tag = 1
         End If
         If iDefault > -1 Then lvProfiles.Items(iDefault).Tag = True
@@ -65,6 +65,13 @@ Public Class frmOptions
     End If
     lblVersion.Text = "v" & My.Application.Info.Version.Major & "." & My.Application.Info.Version.Minor & IIf(My.Application.Info.Version.Build = 0, Nothing, " (build " & My.Application.Info.Version.Build & ")") & IIf(My.Application.Info.Version.Revision = 0, Nothing, " (revision " & My.Application.Info.Version.Revision & ")")
     cmdSave.Enabled = False
+  End Sub
+
+  Private Sub frmOptions_SizeChanged(sender As Object, e As System.EventArgs) Handles Me.SizeChanged
+    If tbsManager.SelectedIndex = 1 Then
+      lvProfiles.Columns(0).Width = CInt(Math.Floor(lvProfiles.ClientSize.Width / 2) - 1)
+      lvProfiles.Columns(1).Width = CInt(Math.Floor(lvProfiles.ClientSize.Width / 2) - 1)
+    End If
   End Sub
 
   Private Sub cmdAdd_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cmdAdd.Click
@@ -104,8 +111,8 @@ Public Class frmOptions
         e.Item.Tag = True
       End If
     End If
-    StrToKeys(e.Item.Text, Button1Action)
-    StrToKeys(e.Item.SubItems(1).Text, Button2Action)
+    Button1Action = StrToKeys(e.Item.Text)
+    Button2Action = StrToKeys(e.Item.SubItems(1).Text)
     If cmdSave.Tag Is Nothing Then
       cmdSave.Enabled = True
     Else
@@ -132,44 +139,55 @@ Public Class frmOptions
     Me.Show()
   End Sub
 
-  Private Sub mHook_Mouse_XButton_Down(ByVal ptLocat As System.Drawing.Point, ByVal ButtonNo As UInt32) Handles mHook.Mouse_XButton_Down
-    tmrDetection.Tag = ButtonNo
-    tmrDetection.Interval = 300
-    IntervalShift = 50
-    tmrDetection.Enabled = True
-    tmrDetection_Tick(tmrDetection, New EventArgs)
+  Private Sub mHook_Mouse_XButton_Down(sender As Object, ByRef e As MouseHook.XButtonEventArgs) Handles mHook.Mouse_XButton_Down
+    If Button1Action IsNot Nothing And Button2Action IsNot Nothing Then
+      If e.Button = &H10000 Or e.Button = &H20000 Then
+        tmrDetection.Tag = e.Button
+        tmrDetection.Interval = 300
+        IntervalShift = 50
+        tmrDetection.Enabled = True
+        tmrDetection_Tick(tmrDetection, New EventArgs)
+        e.Handled = True
+      End If
+    End If
   End Sub
 
-  Private Sub mHook_Mouse_XButton_Up(ByVal ptLocat As System.Drawing.Point, ByVal ButtonNo As UInteger) Handles mHook.Mouse_XButton_Up
-    tmrDetection.Enabled = False
-    If ButtonNo = &H10000 Then
-      For Each Key As Keys In Button1Action
-        keybd_event(Key, MapVirtualKey(Key, 0), KEYEVENTF_KEYUP, 0)
-      Next
-    ElseIf ButtonNo = &H20000 Then
-      For Each Key As Keys In Button2Action
-        keybd_event(Key, MapVirtualKey(Key, 0), KEYEVENTF_KEYUP, 0)
-      Next
+  Private Sub mHook_Mouse_XButton_Up(sender As Object, ByRef e As MouseHook.XButtonEventArgs) Handles mHook.Mouse_XButton_Up
+    If Button1Action IsNot Nothing And Button2Action IsNot Nothing Then
+      tmrDetection.Enabled = False
+      If e.Button = &H10000 Then
+        For Each Key As Keys In Button1Action
+          If Not Key = Keys.None Then keybd_event(Key, MapVirtualKey(Key, 0), KEYEVENTF_KEYUP, 0)
+        Next
+        e.Handled = True
+      ElseIf e.Button = &H20000 Then
+        For Each Key As Keys In Button2Action
+          If Not Key = Keys.None Then keybd_event(Key, MapVirtualKey(Key, 0), KEYEVENTF_KEYUP, 0)
+        Next
+        e.Handled = True
+      End If
     End If
   End Sub
 
   Private Sub tmrDetection_Tick(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles tmrDetection.Tick
-    If tmrDetection.Tag = &H10000 Then
-      For Each Key As Keys In Button1Action
-        keybd_event(Key, MapVirtualKey(Key, 0), KEYEVENTF_KEYDOWN, 0)
-      Next
-    ElseIf tmrDetection.Tag = &H20000 Then
-      For Each Key As Keys In Button2Action
-        keybd_event(Key, MapVirtualKey(Key, 0), KEYEVENTF_KEYDOWN, 0)
-      Next
-    End If
-    If tmrDetection.Interval > 75 Then tmrDetection.Interval -= IntervalShift
-    If IntervalShift = 50 Then
-      IntervalShift = 75
-    ElseIf IntervalShift = 75 Then
-      IntervalShift = 100
-    Else
-      IntervalShift = 0
+    If Button1Action IsNot Nothing And Button2Action IsNot Nothing Then
+      If tmrDetection.Tag = &H10000 Then
+        For Each Key As Keys In Button1Action
+          If Not Key = Keys.None Then keybd_event(Key, MapVirtualKey(Key, 0), KEYEVENTF_KEYDOWN, 0)
+        Next
+      ElseIf tmrDetection.Tag = &H20000 Then
+        For Each Key As Keys In Button2Action
+          If Not Key = Keys.None Then keybd_event(Key, MapVirtualKey(Key, 0), KEYEVENTF_KEYDOWN, 0)
+        Next
+      End If
+      If tmrDetection.Interval > 75 Then tmrDetection.Interval -= IntervalShift
+      If IntervalShift = 50 Then
+        IntervalShift = 75
+      ElseIf IntervalShift = 75 Then
+        IntervalShift = 100
+      Else
+        IntervalShift = 0
+      End If
     End If
   End Sub
 
@@ -202,32 +220,45 @@ Public Class frmOptions
     If lvProfiles.SelectedItems.Count > 0 Then
       Dim lvItem As ListViewItem = lvProfiles.SelectedItems(0)
       lvItem.Text = txtExtra1.Text
+      If lvItem.Checked Then cmdSave.Enabled = True
     End If
+    cmdClearExtra1.Enabled = Not txtExtra1.Text = "Disabled"
+  End Sub
+
+  Private Sub cmdClearExtra1_DoubleClick(sender As Object, e As System.EventArgs) Handles cmdClearExtra1.Click
+    txtExtra1.Text = "Disabled"
+    txtExtra1.Tag = "Disabled"
   End Sub
 
   Private Sub txtExtra2_TextChanged(ByVal sender As Object, ByVal e As System.EventArgs) Handles txtExtra2.TextChanged
     If lvProfiles.SelectedItems.Count > 0 Then
       Dim lvItem As ListViewItem = lvProfiles.SelectedItems(0)
       lvItem.SubItems(1).Text = txtExtra2.Text
+      If lvItem.Checked Then cmdSave.Enabled = True
     End If
+    cmdClearExtra2.Enabled = Not txtExtra2.Text = "Disabled"
+  End Sub
+
+  Private Sub cmdClearExtra2_DoubleClick(sender As Object, e As System.EventArgs) Handles cmdClearExtra2.Click
+    txtExtra2.Text = "Disabled"
+    txtExtra2.Tag = "Disabled"
   End Sub
 
   Private Sub cmdButton1Clear_Click(ByVal sender As System.Object, ByVal e As System.EventArgs)
     txtExtra1.Text = vbNullString
   End Sub
 
-  Private Sub lvProfiles_Resize(ByVal sender As Object, ByVal e As System.EventArgs) Handles lvProfiles.Resize
-    lvProfiles.Columns(0).Width = CInt(Math.Floor(lvProfiles.ClientSize.Width / 2) - 1)
-    lvProfiles.Columns(1).Width = CInt(Math.Floor(lvProfiles.ClientSize.Width / 2) - 1)
-  End Sub
-
   Private Sub lvProfiles_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles lvProfiles.SelectedIndexChanged
     If lvProfiles.SelectedItems.Count > 0 Then
       txtExtra1.Enabled = True
       txtExtra2.Enabled = True
+      cmdClearExtra1.Enabled = Not txtExtra1.Text = "Disabled"
+      cmdClearExtra2.Enabled = Not txtExtra2.Text = "Disabled"
     Else
       txtExtra1.Enabled = False
       txtExtra2.Enabled = False
+      cmdClearExtra1.Enabled = False
+      cmdClearExtra2.Enabled = False
     End If
   End Sub
 
@@ -244,8 +275,19 @@ Public Class frmOptions
     If myRegKey.SubKeyCount > 0 AndAlso myRegKey.GetSubKeyNames.Contains("Profiles") Then myRegKey.DeleteSubKeyTree("Profiles")
     If lvProfiles.CheckedItems.Count > 0 Then
       myRegKey.CreateSubKey("Profiles").SetValue("Default", lvProfiles.CheckedIndices(0))
-      StrToKeys(lvProfiles.CheckedItems(0).Text, Button1Action)
-      StrToKeys(lvProfiles.CheckedItems(0).SubItems(1).Text, Button2Action)
+      If String.IsNullOrEmpty(lvProfiles.CheckedItems(0).Text) Then
+        Button1Action = New List(Of Keys)({Keys.None})
+      Else
+        Button1Action = StrToKeys(lvProfiles.CheckedItems(0).Text)
+      End If
+      If String.IsNullOrEmpty(lvProfiles.CheckedItems(0).SubItems(1).Text) Then
+        Button2Action = New List(Of Keys)({Keys.None})
+      Else
+        Button2Action = StrToKeys(lvProfiles.CheckedItems(0).SubItems(1).Text)
+      End If
+    Else
+      Button1Action = Nothing
+      Button2Action = Nothing
     End If
     For I As Integer = 0 To lvProfiles.Items.Count - 1
       Dim sButton1 As String = lvProfiles.Items(I).Text
@@ -279,6 +321,8 @@ Public Class frmOptions
     For I As Integer = 0 To lvProfiles.Items.Count - 1
       Dim sButton1 As String = lvProfiles.Items(I).Text
       Dim sButton2 As String = lvProfiles.Items(I).SubItems(1).Text
+      If String.IsNullOrEmpty(sButton1) Then sButton1 = "Disabled"
+      If String.IsNullOrEmpty(sButton2) Then sButton2 = "Disabled"
       Dim mnuTmp As New MenuItem(sButton1 & "/" & sButton2, AddressOf ProfileItem_Click)
       mnuTmp.Tag = lvProfiles.Items(I)
       mnuProfiles.MenuItems.Add(mnuTmp)
@@ -314,11 +358,7 @@ Public Class frmOptions
       Exit Sub
     End If
     If chkEnable.Checked Then
-      mHook = New MouseHook
-      If lvProfiles.CheckedItems.Count > 0 Then
-        StrToKeys(lvProfiles.CheckedItems(0).Text, Button1Action)
-        StrToKeys(lvProfiles.CheckedItems(0).SubItems(1).Text, Button2Action)
-      Else
+      If lvProfiles.CheckedItems.Count = 0 Then
         If lvProfiles.Items.Count > 0 Then
           For Each lvItem As ListViewItem In lvProfiles.Items
             If lvItem.Tag = True Then
@@ -330,7 +370,6 @@ Public Class frmOptions
         End If
       End If
     Else
-      mHook = Nothing
       For Each lvItem As ListViewItem In lvProfiles.CheckedItems
         If lvItem.Checked Then
           lvItem.Tag = True
@@ -341,8 +380,8 @@ Public Class frmOptions
     End If
   End Sub
 
-  Private Sub StrToKeys(ByVal sKeys As String, ByRef cKeys As Collection)
-    cKeys.Clear()
+  Private Function StrToKeys(ByVal sKeys As String) As List(Of Keys)
+    Dim cKeys As New List(Of Keys)
     Dim sKeyList() As String = Split(sKeys)
     For Each sKey As String In sKeyList
       Select Case sKey
@@ -708,9 +747,12 @@ Public Class frmOptions
           cKeys.Add(Keys.Z)
         Case "Zoom"
           cKeys.Add(Keys.Zoom)
+        Case "Disabled"
+          cKeys.Add(Keys.None)
       End Select
     Next
-  End Sub
+    Return cKeys
+  End Function
 
   Private Function KeyToStr(ByRef Key As Keys) As String
     Select Case Key
@@ -1076,19 +1118,13 @@ Public Class frmOptions
         Return "Z"
       Case Keys.Zoom
         Return "Zoom"
+      Case Keys.None
+        Return "Disabled"
       Case Else
         Debug.Print(Key.ToString())
         Return Nothing
     End Select
   End Function
-
-  Private Sub cmdClear1_Click(ByVal sender As System.Object, ByVal e As System.EventArgs)
-    txtExtra1.Clear()
-  End Sub
-
-  Private Sub cmdClear2_Click(ByVal sender As System.Object, ByVal e As System.EventArgs)
-    txtExtra2.Clear()
-  End Sub
 
   Private Sub lblWebsite_LinkClicked(ByVal sender As System.Object, ByVal e As System.Windows.Forms.LinkLabelLinkClickedEventArgs) Handles lblWebsite.LinkClicked
     Process.Start("http://realityripple.com")
@@ -1101,5 +1137,19 @@ Public Class frmOptions
   Private Sub chkStart_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkStart.CheckedChanged
     cmdSave.Enabled = True
   End Sub
-End Class
 
+  Private Sub tbsManager_SelectedIndexChanged(sender As Object, e As System.EventArgs) Handles tbsManager.SelectedIndexChanged
+    If tbsManager.SelectedIndex = 1 Then
+      lvProfiles.Columns(0).Width = CInt(Math.Floor(lvProfiles.ClientSize.Width / 2) - 1)
+      lvProfiles.Columns(1).Width = CInt(Math.Floor(lvProfiles.ClientSize.Width / 2) - 1)
+    End If
+  End Sub
+
+  Private Sub frmOptions_VisibleChanged(sender As Object, e As System.EventArgs) Handles Me.VisibleChanged
+    If Me.Visible Then
+      If mHook IsNot Nothing Then mHook = Nothing
+    Else
+      If chkEnable.Checked Then mHook = New MouseHook
+    End If
+  End Sub
+End Class
