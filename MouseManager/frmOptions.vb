@@ -244,10 +244,6 @@ Public Class frmOptions
     txtExtra2.Tag = "Disabled"
   End Sub
 
-  Private Sub cmdButton1Clear_Click(ByVal sender As System.Object, ByVal e As System.EventArgs)
-    txtExtra1.Text = vbNullString
-  End Sub
-
   Private Sub lvProfiles_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles lvProfiles.SelectedIndexChanged
     If lvProfiles.SelectedItems.Count > 0 Then
       txtExtra1.Enabled = True
@@ -333,6 +329,7 @@ Public Class frmOptions
   Private Sub ProfileItem_Click(ByVal sender As MenuItem, ByVal e As System.EventArgs)
     If sender.Text = "No Profile" Then
       chkEnable.Checked = sender.Checked
+      mHook = Nothing
     Else
       chkEnable.Checked = True
       For Each mnuItem As MenuItem In (From mnuTmp In mnuProfiles.MenuItems Where mnuTmp.GetType.ToString = "MenuItem" Select mnuTmp)
@@ -342,6 +339,7 @@ Public Class frmOptions
       Dim xItem As ListViewItem = sender.Tag
       xItem.Checked = True
       lvProfiles_ItemChecked(sender, New ItemCheckedEventArgs(xItem))
+      mHook = New MouseHook
     End If
     cmdSave_Click(sender, e)
   End Sub
