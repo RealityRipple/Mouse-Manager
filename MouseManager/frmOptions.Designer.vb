@@ -145,7 +145,7 @@ Partial Class frmOptions
     Me.tabProfiles.Controls.Add(Me.pnlProfiles)
     Me.tabProfiles.Location = New System.Drawing.Point(4, 22)
     Me.tabProfiles.Name = "tabProfiles"
-    Me.tabProfiles.Size = New System.Drawing.Size(328, 255)
+    Me.tabProfiles.Size = New System.Drawing.Size(308, 167)
     Me.tabProfiles.TabIndex = 1
     Me.tabProfiles.Text = "Profiles"
     Me.tabProfiles.UseVisualStyleBackColor = True
@@ -173,26 +173,26 @@ Partial Class frmOptions
     Me.pnlProfiles.RowStyles.Add(New System.Windows.Forms.RowStyle())
     Me.pnlProfiles.RowStyles.Add(New System.Windows.Forms.RowStyle())
     Me.pnlProfiles.RowStyles.Add(New System.Windows.Forms.RowStyle())
-    Me.pnlProfiles.Size = New System.Drawing.Size(328, 255)
+    Me.pnlProfiles.Size = New System.Drawing.Size(308, 167)
     Me.pnlProfiles.TabIndex = 0
     '
     'lblButton4
     '
     Me.lblButton4.Anchor = System.Windows.Forms.AnchorStyles.Left
     Me.lblButton4.AutoSize = True
-    Me.lblButton4.Location = New System.Drawing.Point(3, 171)
+    Me.lblButton4.Location = New System.Drawing.Point(3, 83)
     Me.lblButton4.Name = "lblButton4"
-    Me.lblButton4.Size = New System.Drawing.Size(77, 13)
+    Me.lblButton4.Size = New System.Drawing.Size(85, 13)
     Me.lblButton4.TabIndex = 1
     Me.lblButton4.Text = "Mouse Button &4:"
     '
-    'lblButton2
+    'lblButton5
     '
     Me.lblButton5.Anchor = System.Windows.Forms.AnchorStyles.Left
     Me.lblButton5.AutoSize = True
-    Me.lblButton5.Location = New System.Drawing.Point(3, 202)
-    Me.lblButton5.Name = "lblButton2"
-    Me.lblButton5.Size = New System.Drawing.Size(77, 13)
+    Me.lblButton5.Location = New System.Drawing.Point(3, 114)
+    Me.lblButton5.Name = "lblButton5"
+    Me.lblButton5.Size = New System.Drawing.Size(85, 13)
     Me.lblButton5.TabIndex = 4
     Me.lblButton5.Text = "Mouse Button &5:"
     '
@@ -210,7 +210,7 @@ Partial Class frmOptions
     Me.lvProfiles.MultiSelect = False
     Me.lvProfiles.Name = "lvProfiles"
     Me.lvProfiles.ShowGroups = False
-    Me.lvProfiles.Size = New System.Drawing.Size(322, 156)
+    Me.lvProfiles.Size = New System.Drawing.Size(302, 68)
     Me.lvProfiles.TabIndex = 0
     Me.lvProfiles.TabStop = False
     Me.lvProfiles.UseCompatibleStateImageBehavior = False
@@ -221,7 +221,7 @@ Partial Class frmOptions
     Me.colButton4.Text = "Button 4"
     Me.colButton4.Width = 150
     '
-    'colButton2
+    'colButton5
     '
     Me.colButton5.Text = "Button 5"
     Me.colButton5.Width = 150
@@ -232,9 +232,9 @@ Partial Class frmOptions
     Me.txtButton5.AcceptsTab = True
     Me.txtButton5.Anchor = CType((System.Windows.Forms.AnchorStyles.Left Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
     Me.txtButton5.Enabled = False
-    Me.txtButton5.Location = New System.Drawing.Point(86, 198)
+    Me.txtButton5.Location = New System.Drawing.Point(94, 110)
     Me.txtButton5.Name = "txtButton5"
-    Me.txtButton5.Size = New System.Drawing.Size(211, 20)
+    Me.txtButton5.Size = New System.Drawing.Size(183, 20)
     Me.txtButton5.TabIndex = 5
     Me.txtButton5.TabStop = False
     '
@@ -244,9 +244,9 @@ Partial Class frmOptions
     Me.txtButton4.AcceptsTab = True
     Me.txtButton4.Anchor = CType((System.Windows.Forms.AnchorStyles.Left Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
     Me.txtButton4.Enabled = False
-    Me.txtButton4.Location = New System.Drawing.Point(86, 167)
+    Me.txtButton4.Location = New System.Drawing.Point(94, 79)
     Me.txtButton4.Name = "txtButton4"
-    Me.txtButton4.Size = New System.Drawing.Size(211, 20)
+    Me.txtButton4.Size = New System.Drawing.Size(183, 20)
     Me.txtButton4.TabIndex = 2
     Me.txtButton4.TabStop = False
     '
@@ -261,7 +261,7 @@ Partial Class frmOptions
     Me.pnlAddRemove.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
     Me.pnlAddRemove.Controls.Add(Me.cmdAdd, 0, 0)
     Me.pnlAddRemove.Controls.Add(Me.cmdRem, 1, 0)
-    Me.pnlAddRemove.Location = New System.Drawing.Point(166, 224)
+    Me.pnlAddRemove.Location = New System.Drawing.Point(146, 136)
     Me.pnlAddRemove.Margin = New System.Windows.Forms.Padding(0)
     Me.pnlAddRemove.Name = "pnlAddRemove"
     Me.pnlAddRemove.RowCount = 1
@@ -298,7 +298,7 @@ Partial Class frmOptions
     Me.cmdClearExtra1.Anchor = System.Windows.Forms.AnchorStyles.Right
     Me.cmdClearExtra1.Enabled = False
     Me.cmdClearExtra1.Image = Global.MouseManager.My.Resources.Resources.clr
-    Me.cmdClearExtra1.Location = New System.Drawing.Point(300, 165)
+    Me.cmdClearExtra1.Location = New System.Drawing.Point(280, 77)
     Me.cmdClearExtra1.Margin = New System.Windows.Forms.Padding(0, 3, 3, 3)
     Me.cmdClearExtra1.Name = "cmdClearExtra1"
     Me.cmdClearExtra1.Size = New System.Drawing.Size(25, 25)
@@ -311,7 +311,7 @@ Partial Class frmOptions
     Me.cmdClearExtra2.Anchor = System.Windows.Forms.AnchorStyles.Right
     Me.cmdClearExtra2.Enabled = False
     Me.cmdClearExtra2.Image = Global.MouseManager.My.Resources.Resources.clr
-    Me.cmdClearExtra2.Location = New System.Drawing.Point(300, 196)
+    Me.cmdClearExtra2.Location = New System.Drawing.Point(280, 108)
     Me.cmdClearExtra2.Margin = New System.Windows.Forms.Padding(0, 3, 3, 3)
     Me.cmdClearExtra2.Name = "cmdClearExtra2"
     Me.cmdClearExtra2.Size = New System.Drawing.Size(25, 25)
@@ -324,7 +324,7 @@ Partial Class frmOptions
     Me.tabAbout.Controls.Add(Me.pnlAbout)
     Me.tabAbout.Location = New System.Drawing.Point(4, 22)
     Me.tabAbout.Name = "tabAbout"
-    Me.tabAbout.Size = New System.Drawing.Size(328, 255)
+    Me.tabAbout.Size = New System.Drawing.Size(308, 167)
     Me.tabAbout.TabIndex = 2
     Me.tabAbout.Text = "About"
     Me.tabAbout.UseVisualStyleBackColor = True
@@ -348,7 +348,7 @@ Partial Class frmOptions
     Me.pnlAbout.RowStyles.Add(New System.Windows.Forms.RowStyle())
     Me.pnlAbout.RowStyles.Add(New System.Windows.Forms.RowStyle())
     Me.pnlAbout.RowStyles.Add(New System.Windows.Forms.RowStyle())
-    Me.pnlAbout.Size = New System.Drawing.Size(328, 255)
+    Me.pnlAbout.Size = New System.Drawing.Size(308, 167)
     Me.pnlAbout.TabIndex = 1
     '
     'lblTitle
@@ -356,7 +356,7 @@ Partial Class frmOptions
     Me.lblTitle.Anchor = System.Windows.Forms.AnchorStyles.None
     Me.lblTitle.AutoSize = True
     Me.lblTitle.Font = New System.Drawing.Font("Segoe UI", 27.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-    Me.lblTitle.Location = New System.Drawing.Point(19, 50)
+    Me.lblTitle.Location = New System.Drawing.Point(9, 6)
     Me.lblTitle.Name = "lblTitle"
     Me.lblTitle.Size = New System.Drawing.Size(289, 50)
     Me.lblTitle.TabIndex = 0
@@ -367,7 +367,7 @@ Partial Class frmOptions
     '
     Me.lblVersion.Anchor = System.Windows.Forms.AnchorStyles.Right
     Me.lblVersion.AutoSize = True
-    Me.lblVersion.Location = New System.Drawing.Point(297, 155)
+    Me.lblVersion.Location = New System.Drawing.Point(277, 67)
     Me.lblVersion.Margin = New System.Windows.Forms.Padding(3, 5, 3, 10)
     Me.lblVersion.Name = "lblVersion"
     Me.lblVersion.Size = New System.Drawing.Size(28, 13)
@@ -379,7 +379,7 @@ Partial Class frmOptions
     '
     Me.lblAbout.Anchor = System.Windows.Forms.AnchorStyles.None
     Me.lblAbout.AutoSize = True
-    Me.lblAbout.Location = New System.Drawing.Point(100, 183)
+    Me.lblAbout.Location = New System.Drawing.Point(90, 95)
     Me.lblAbout.Margin = New System.Windows.Forms.Padding(3, 5, 3, 5)
     Me.lblAbout.Name = "lblAbout"
     Me.lblAbout.Size = New System.Drawing.Size(128, 13)
@@ -392,7 +392,7 @@ Partial Class frmOptions
     '
     Me.cmdDonate.Anchor = System.Windows.Forms.AnchorStyles.Right
     Me.cmdDonate.FlatStyle = System.Windows.Forms.FlatStyle.System
-    Me.cmdDonate.Location = New System.Drawing.Point(215, 204)
+    Me.cmdDonate.Location = New System.Drawing.Point(195, 116)
     Me.cmdDonate.Name = "cmdDonate"
     Me.cmdDonate.Size = New System.Drawing.Size(110, 25)
     Me.cmdDonate.TabIndex = 3
@@ -405,15 +405,15 @@ Partial Class frmOptions
     Me.lblWebsite.Anchor = System.Windows.Forms.AnchorStyles.None
     Me.lblWebsite.AutoSize = True
     Me.lblWebsite.Cursor = System.Windows.Forms.Cursors.Hand
-    Me.lblWebsite.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!)
+    Me.lblWebsite.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Underline)
     Me.lblWebsite.ForeColor = System.Drawing.Color.MediumBlue
-    Me.lblWebsite.Location = New System.Drawing.Point(107, 237)
+    Me.lblWebsite.Location = New System.Drawing.Point(95, 149)
     Me.lblWebsite.Margin = New System.Windows.Forms.Padding(3, 5, 3, 5)
     Me.lblWebsite.Name = "lblWebsite"
-    Me.lblWebsite.Size = New System.Drawing.Size(113, 13)
+    Me.lblWebsite.Size = New System.Drawing.Size(118, 13)
     Me.lblWebsite.TabIndex = 3
     Me.lblWebsite.TabStop = True
-    Me.lblWebsite.Text = "http://realityripple.com"
+    Me.lblWebsite.Text = "https://realityripple.com"
     '
     'mnuTray
     '

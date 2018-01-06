@@ -1198,11 +1198,11 @@ Public Class frmOptions
   End Function
 
   Private Sub lblWebsite_LinkClicked(ByVal sender As System.Object, ByVal e As System.Windows.Forms.LinkLabelLinkClickedEventArgs) Handles lblWebsite.LinkClicked
-    Process.Start("http://realityripple.com")
+    Process.Start("https://realityripple.com")
   End Sub
 
   Private Sub cmdDonate_Click(sender As System.Object, e As System.EventArgs) Handles cmdDonate.Click
-    Process.Start("http://realityripple.com/donate.php?itm=Mouse+Manager")
+    Process.Start("https://realityripple.com/donate.php?itm=Mouse+Manager")
   End Sub
 
   Private Sub chkStart_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkStart.CheckedChanged
