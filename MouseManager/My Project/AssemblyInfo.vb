@@ -12,7 +12,7 @@ Imports System.Runtime.InteropServices
 <Assembly: AssemblyDescription("Mouse Manager maps keyboard commands to fourth and fifth buttons on a 4-button, 5-button, or Tilt-wheel mouse.")> 
 <Assembly: AssemblyCompany("RealityRipple Software")> 
 <Assembly: AssemblyProduct("Mouse Manager")> 
-<Assembly: AssemblyCopyright("http://realityripple.com/Software/Applications/Mouse_Manager/")> 
+<Assembly: AssemblyCopyright("https://realityripple.com/Software/Applications/Mouse-Manager/")> 
 <Assembly: AssemblyTrademark("Mouse Manager by RealityRipple Software")> 
 
 <Assembly: ComVisible(False)>
@@ -31,5 +31,5 @@ Imports System.Runtime.InteropServices
 ' by using the '*' as shown below:
 ' <Assembly: AssemblyVersion("1.0.*")> 
 
-<Assembly: AssemblyVersion("1.3.0.0")> 
-<Assembly: AssemblyFileVersion("1.3.0.0")> 
+<Assembly: AssemblyVersion("1.4")> 
+<Assembly: AssemblyFileVersion("1.4")> 

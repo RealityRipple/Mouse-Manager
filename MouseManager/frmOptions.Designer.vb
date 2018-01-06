@@ -31,13 +31,13 @@ Partial Class frmOptions
     Me.chkEnable = New System.Windows.Forms.CheckBox()
     Me.tabProfiles = New System.Windows.Forms.TabPage()
     Me.pnlProfiles = New System.Windows.Forms.TableLayoutPanel()
-    Me.lblButton1 = New System.Windows.Forms.Label()
-    Me.lblButton2 = New System.Windows.Forms.Label()
+    Me.lblButton4 = New System.Windows.Forms.Label()
+    Me.lblButton5 = New System.Windows.Forms.Label()
     Me.lvProfiles = New System.Windows.Forms.ListView()
-    Me.colButton1 = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-    Me.colButton2 = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-    Me.txtExtra2 = New System.Windows.Forms.TextBox()
-    Me.txtExtra1 = New System.Windows.Forms.TextBox()
+    Me.colButton4 = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
+    Me.colButton5 = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
+    Me.txtButton5 = New System.Windows.Forms.TextBox()
+    Me.txtButton4 = New System.Windows.Forms.TextBox()
     Me.pnlAddRemove = New System.Windows.Forms.TableLayoutPanel()
     Me.cmdAdd = New System.Windows.Forms.Button()
     Me.cmdRem = New System.Windows.Forms.Button()
@@ -156,11 +156,11 @@ Partial Class frmOptions
     Me.pnlProfiles.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle())
     Me.pnlProfiles.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100.0!))
     Me.pnlProfiles.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle())
-    Me.pnlProfiles.Controls.Add(Me.lblButton1, 0, 1)
-    Me.pnlProfiles.Controls.Add(Me.lblButton2, 0, 2)
+    Me.pnlProfiles.Controls.Add(Me.lblButton4, 0, 1)
+    Me.pnlProfiles.Controls.Add(Me.lblButton5, 0, 2)
     Me.pnlProfiles.Controls.Add(Me.lvProfiles, 0, 0)
-    Me.pnlProfiles.Controls.Add(Me.txtExtra2, 1, 2)
-    Me.pnlProfiles.Controls.Add(Me.txtExtra1, 1, 1)
+    Me.pnlProfiles.Controls.Add(Me.txtButton5, 1, 2)
+    Me.pnlProfiles.Controls.Add(Me.txtButton4, 1, 1)
     Me.pnlProfiles.Controls.Add(Me.pnlAddRemove, 0, 3)
     Me.pnlProfiles.Controls.Add(Me.cmdClearExtra1, 2, 1)
     Me.pnlProfiles.Controls.Add(Me.cmdClearExtra2, 2, 2)
@@ -176,30 +176,30 @@ Partial Class frmOptions
     Me.pnlProfiles.Size = New System.Drawing.Size(328, 255)
     Me.pnlProfiles.TabIndex = 0
     '
-    'lblButton1
+    'lblButton4
     '
-    Me.lblButton1.Anchor = System.Windows.Forms.AnchorStyles.Left
-    Me.lblButton1.AutoSize = True
-    Me.lblButton1.Location = New System.Drawing.Point(3, 171)
-    Me.lblButton1.Name = "lblButton1"
-    Me.lblButton1.Size = New System.Drawing.Size(77, 13)
-    Me.lblButton1.TabIndex = 1
-    Me.lblButton1.Text = "Extra Button &1:"
+    Me.lblButton4.Anchor = System.Windows.Forms.AnchorStyles.Left
+    Me.lblButton4.AutoSize = True
+    Me.lblButton4.Location = New System.Drawing.Point(3, 171)
+    Me.lblButton4.Name = "lblButton4"
+    Me.lblButton4.Size = New System.Drawing.Size(77, 13)
+    Me.lblButton4.TabIndex = 1
+    Me.lblButton4.Text = "Mouse Button &4:"
     '
     'lblButton2
     '
-    Me.lblButton2.Anchor = System.Windows.Forms.AnchorStyles.Left
-    Me.lblButton2.AutoSize = True
-    Me.lblButton2.Location = New System.Drawing.Point(3, 202)
-    Me.lblButton2.Name = "lblButton2"
-    Me.lblButton2.Size = New System.Drawing.Size(77, 13)
-    Me.lblButton2.TabIndex = 4
-    Me.lblButton2.Text = "Extra Button &2:"
+    Me.lblButton5.Anchor = System.Windows.Forms.AnchorStyles.Left
+    Me.lblButton5.AutoSize = True
+    Me.lblButton5.Location = New System.Drawing.Point(3, 202)
+    Me.lblButton5.Name = "lblButton2"
+    Me.lblButton5.Size = New System.Drawing.Size(77, 13)
+    Me.lblButton5.TabIndex = 4
+    Me.lblButton5.Text = "Mouse Button &5:"
     '
     'lvProfiles
     '
     Me.lvProfiles.CheckBoxes = True
-    Me.lvProfiles.Columns.AddRange(New System.Windows.Forms.ColumnHeader() {Me.colButton1, Me.colButton2})
+    Me.lvProfiles.Columns.AddRange(New System.Windows.Forms.ColumnHeader() {Me.colButton4, Me.colButton5})
     Me.pnlProfiles.SetColumnSpan(Me.lvProfiles, 3)
     Me.lvProfiles.Dock = System.Windows.Forms.DockStyle.Fill
     Me.lvProfiles.FullRowSelect = True
@@ -216,39 +216,39 @@ Partial Class frmOptions
     Me.lvProfiles.UseCompatibleStateImageBehavior = False
     Me.lvProfiles.View = System.Windows.Forms.View.Details
     '
-    'colButton1
+    'colButton4
     '
-    Me.colButton1.Text = "Extra Button 1"
-    Me.colButton1.Width = 150
+    Me.colButton4.Text = "Button 4"
+    Me.colButton4.Width = 150
     '
     'colButton2
     '
-    Me.colButton2.Text = "Extra Button 2"
-    Me.colButton2.Width = 150
+    Me.colButton5.Text = "Button 5"
+    Me.colButton5.Width = 150
     '
-    'txtExtra2
+    'txtButton5
     '
-    Me.txtExtra2.AcceptsReturn = True
-    Me.txtExtra2.AcceptsTab = True
-    Me.txtExtra2.Anchor = CType((System.Windows.Forms.AnchorStyles.Left Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-    Me.txtExtra2.Enabled = False
-    Me.txtExtra2.Location = New System.Drawing.Point(86, 198)
-    Me.txtExtra2.Name = "txtExtra2"
-    Me.txtExtra2.Size = New System.Drawing.Size(211, 20)
-    Me.txtExtra2.TabIndex = 5
-    Me.txtExtra2.TabStop = False
+    Me.txtButton5.AcceptsReturn = True
+    Me.txtButton5.AcceptsTab = True
+    Me.txtButton5.Anchor = CType((System.Windows.Forms.AnchorStyles.Left Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+    Me.txtButton5.Enabled = False
+    Me.txtButton5.Location = New System.Drawing.Point(86, 198)
+    Me.txtButton5.Name = "txtButton5"
+    Me.txtButton5.Size = New System.Drawing.Size(211, 20)
+    Me.txtButton5.TabIndex = 5
+    Me.txtButton5.TabStop = False
     '
-    'txtExtra1
+    'txtButton4
     '
-    Me.txtExtra1.AcceptsReturn = True
-    Me.txtExtra1.AcceptsTab = True
-    Me.txtExtra1.Anchor = CType((System.Windows.Forms.AnchorStyles.Left Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-    Me.txtExtra1.Enabled = False
-    Me.txtExtra1.Location = New System.Drawing.Point(86, 167)
-    Me.txtExtra1.Name = "txtExtra1"
-    Me.txtExtra1.Size = New System.Drawing.Size(211, 20)
-    Me.txtExtra1.TabIndex = 2
-    Me.txtExtra1.TabStop = False
+    Me.txtButton4.AcceptsReturn = True
+    Me.txtButton4.AcceptsTab = True
+    Me.txtButton4.Anchor = CType((System.Windows.Forms.AnchorStyles.Left Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+    Me.txtButton4.Enabled = False
+    Me.txtButton4.Location = New System.Drawing.Point(86, 167)
+    Me.txtButton4.Name = "txtButton4"
+    Me.txtButton4.Size = New System.Drawing.Size(211, 20)
+    Me.txtButton4.TabIndex = 2
+    Me.txtButton4.TabStop = False
     '
     'pnlAddRemove
     '
@@ -536,21 +536,21 @@ Partial Class frmOptions
   Friend WithEvents pnlSettings As System.Windows.Forms.TableLayoutPanel
   Friend WithEvents chkStart As System.Windows.Forms.CheckBox
   Friend WithEvents pnlProfiles As System.Windows.Forms.TableLayoutPanel
-  Friend WithEvents lblButton1 As System.Windows.Forms.Label
-  Friend WithEvents lblButton2 As System.Windows.Forms.Label
+  Friend WithEvents lblButton4 As System.Windows.Forms.Label
+  Friend WithEvents lblButton5 As System.Windows.Forms.Label
   Friend WithEvents lvProfiles As System.Windows.Forms.ListView
   Friend WithEvents tabAbout As System.Windows.Forms.TabPage
   Friend WithEvents cmdClose As System.Windows.Forms.Button
   Friend WithEvents cmdSave As System.Windows.Forms.Button
-  Friend WithEvents colButton1 As System.Windows.Forms.ColumnHeader
-  Friend WithEvents colButton2 As System.Windows.Forms.ColumnHeader
+  Friend WithEvents colButton4 As System.Windows.Forms.ColumnHeader
+  Friend WithEvents colButton5 As System.Windows.Forms.ColumnHeader
   Friend WithEvents chkEnable As System.Windows.Forms.CheckBox
   Friend WithEvents pnlAbout As System.Windows.Forms.TableLayoutPanel
   Friend WithEvents lblAbout As System.Windows.Forms.Label
   Friend WithEvents lblTitle As System.Windows.Forms.Label
   Friend WithEvents tmrDetection As System.Windows.Forms.Timer
-  Friend WithEvents txtExtra1 As System.Windows.Forms.TextBox
-  Friend WithEvents txtExtra2 As System.Windows.Forms.TextBox
+  Friend WithEvents txtButton4 As System.Windows.Forms.TextBox
+  Friend WithEvents txtButton5 As System.Windows.Forms.TextBox
   Friend WithEvents tmrInit As System.Windows.Forms.Timer
   Friend WithEvents lblVersion As System.Windows.Forms.Label
   Friend WithEvents pnlAddRemove As System.Windows.Forms.TableLayoutPanel

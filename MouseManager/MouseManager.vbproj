@@ -122,6 +122,7 @@
     <Import Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApplicationEvents.vb" />
     <Compile Include="clsLinkLabel.vb">
       <SubType>Component</SubType>
     </Compile>

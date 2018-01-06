@@ -9,10 +9,11 @@ Public Class frmOptions
   Public Const KEYEVENTF_KEYDOWN As Long = &H0
   Public Const KEYEVENTF_KEYUP As Long = &H2
   Private WithEvents mHook As MouseHook
-  Private Button1Action As New List(Of Keys)
-  Private Button2Action As New List(Of Keys)
+  Private selButton4Action As New List(Of Keys)
+  Private selButton5Action As New List(Of Keys)
   Private IntervalShift As Integer
   Private delKey As Boolean = False
+  Private loaded As Boolean = False
 
   Private Sub frmOptions_FormClosing(ByVal sender As Object, ByVal e As System.Windows.Forms.FormClosingEventArgs) Handles Me.FormClosing
     If e.CloseReason = CloseReason.UserClosing Then
@@ -27,7 +28,7 @@ Public Class frmOptions
     chkStart.Checked = My.Computer.Registry.CurrentUser.OpenSubKey("Software").OpenSubKey("Microsoft").OpenSubKey("Windows").OpenSubKey("CurrentVersion").OpenSubKey("Run", True).GetValue("MouseManager", vbNullString) = Application.ExecutablePath
     If My.Computer.Registry.CurrentUser.OpenSubKey("Software").GetSubKeyNames.Contains(Application.CompanyName) AndAlso
       My.Computer.Registry.CurrentUser.OpenSubKey("Software").OpenSubKey(Application.CompanyName).GetSubKeyNames.Contains(Application.ProductName) Then
-      Dim myParentKey As Microsoft.Win32.RegistryKey = My.Computer.Registry.CurrentUser.OpenSubKey("Software").OpenSubKey(Application.CompanyName).OpenSubKey(Application.ProductName)
+      Dim myParentKey As Microsoft.Win32.RegistryKey = GetRegKey(False)
       Dim myRegKey As Microsoft.Win32.RegistryKey = Nothing
       If (myParentKey.SubKeyCount > 0 AndAlso myParentKey.GetSubKeyNames.Contains("Profiles")) Or (myParentKey.ValueCount > 0) Then
         myRegKey = myParentKey
@@ -39,32 +40,36 @@ Public Class frmOptions
         delKey = True
       End If
       If myRegKey IsNot Nothing Then
-        cmdSave.Tag = 0
         Dim iDefault As Integer = -1
-        If myRegKey.SubKeyCount > 0 AndAlso myRegKey.GetSubKeyNames.Contains("Profiles") Then
-          For Each Key As String In myRegKey.OpenSubKey("Profiles").GetSubKeyNames()
+        Dim myProfileKey As Microsoft.Win32.RegistryKey = GetRegProfiles(myRegKey, False)
+        If myProfileKey IsNot Nothing Then
+          For Each Key As String In myProfileKey.GetSubKeyNames()
             Dim lvItem As New ListViewItem
-            lvItem.Text = myRegKey.OpenSubKey("Profiles").OpenSubKey(Key).GetValue("Button1").ToString
-            lvItem.SubItems.Add(myRegKey.OpenSubKey("Profiles").OpenSubKey(Key).GetValue("Button2").ToString)
+            If String.IsNullOrEmpty(myProfileKey.OpenSubKey(Key).GetValue("Button4")) And String.IsNullOrEmpty(myProfileKey.OpenSubKey(Key).GetValue("Button5")) Then
+              lvItem.Text = myProfileKey.OpenSubKey(Key).GetValue("Button1").ToString
+              lvItem.SubItems.Add(myProfileKey.OpenSubKey(Key).GetValue("Button2").ToString)
+            Else
+              lvItem.Text = myProfileKey.OpenSubKey(Key).GetValue("Button4").ToString
+              lvItem.SubItems.Add(myProfileKey.OpenSubKey(Key).GetValue("Button5").ToString)
+            End If
             lvProfiles.Items.Add(lvItem)
           Next
           If lvProfiles.Items.Count <> 0 Then tmrInit.Enabled = True
-          iDefault = CInt(myRegKey.OpenSubKey("Profiles").GetValue("Default"))
+          iDefault = CInt(myProfileKey.GetValue("Default"))
         End If
         chkEnable.Checked = myRegKey.GetValue("Enabled")
         If chkEnable.Checked Then
-          lvProfiles.Items(iDefault).Checked = True
-          Button1Action = StrToKeys(lvProfiles.CheckedItems(0).Text)
-          Button2Action = StrToKeys(lvProfiles.CheckedItems(0).SubItems(1).Text)
-          cmdSave.Tag = 1
+          If lvProfiles.Items.Count > iDefault Then lvProfiles.Items(iDefault).Checked = True
+          selButton4Action = StrToKeys(lvProfiles.CheckedItems(0).Text)
+          selButton5Action = StrToKeys(lvProfiles.CheckedItems(0).SubItems(1).Text)
         End If
-        If iDefault > -1 Then lvProfiles.Items(iDefault).Tag = True
+        If iDefault > -1 And lvProfiles.Items.Count > iDefault Then lvProfiles.Items(iDefault).Tag = True
       End If
-    Else
-      cmdSave.Tag = Nothing
     End If
-    lblVersion.Text = "v" & My.Application.Info.Version.Major & "." & My.Application.Info.Version.Minor & IIf(My.Application.Info.Version.Build = 0, Nothing, " (build " & My.Application.Info.Version.Build & ")") & IIf(My.Application.Info.Version.Revision = 0, Nothing, " (revision " & My.Application.Info.Version.Revision & ")")
+    lblVersion.Text = "v" & Application.ProductVersion
     cmdSave.Enabled = False
+    cmdRem.Enabled = False
+    loaded = True
   End Sub
 
   Private Sub frmOptions_SizeChanged(sender As Object, e As System.EventArgs) Handles Me.SizeChanged
@@ -80,15 +85,15 @@ Public Class frmOptions
     lvItem.SubItems.Add("PageDown")
     lvProfiles.Items.Add(lvItem)
     lvItem.Selected = True
-    txtExtra1.Focus()
+    txtButton4.Focus()
     If (From lvFind As ListViewItem In lvProfiles.Items Where lvFind.Checked Select lvFind).Count = 0 Then lvItem.Checked = True
-    cmdSave.Enabled = True
+    If loaded Then cmdSave.Enabled = ChangesMade()
   End Sub
 
   Private Sub cmdRem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cmdRem.Click
     lvProfiles.Items.Remove(lvProfiles.SelectedItems(0))
     If lvProfiles.Items.Count = 0 Then chkEnable.Checked = False
-    cmdSave.Enabled = True
+    If loaded Then cmdSave.Enabled = ChangesMade()
   End Sub
 
   Private Sub cmdClose_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cmdClose.Click
@@ -111,24 +116,23 @@ Public Class frmOptions
         e.Item.Tag = True
       End If
     End If
-    Button1Action = StrToKeys(e.Item.Text)
-    Button2Action = StrToKeys(e.Item.SubItems(1).Text)
-    If cmdSave.Tag Is Nothing Then
-      cmdSave.Enabled = True
-    Else
-      If cmdSave.Tag = 0 Then
-        If Not e.Item.Checked Then cmdSave.Tag = Nothing
-      ElseIf cmdSave.Tag = 1 Then
-        If Not e.Item.Checked Then cmdSave.Tag = 2
-      ElseIf cmdSave.Tag = 2 Then
-        If e.Item.Checked Then cmdSave.Tag = Nothing
-      End If
-    End If
+    selButton4Action = StrToKeys(e.Item.Text)
+    selButton5Action = StrToKeys(e.Item.SubItems(1).Text)
+    If loaded Then cmdSave.Enabled = ChangesMade()
   End Sub
 
   Private Sub lvProfiles_ItemSelectionChanged(ByVal sender As Object, ByVal e As System.Windows.Forms.ListViewItemSelectionChangedEventArgs) Handles lvProfiles.ItemSelectionChanged
-    txtExtra1.Text = e.Item.Text
-    txtExtra2.Text = e.Item.SubItems(1).Text
+    If e.IsSelected Then
+      txtButton4.Text = e.Item.Text
+      txtButton5.Text = e.Item.SubItems(1).Text
+    End If
+    If lvProfiles.SelectedItems.Count = 0 Then
+      cmdRem.Enabled = False
+      txtButton4.Text = Nothing
+      txtButton5.Text = Nothing
+    Else
+      cmdRem.Enabled = True
+    End If
   End Sub
 
   Private Sub mnuExit_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles mnuExit.Click
@@ -140,7 +144,7 @@ Public Class frmOptions
   End Sub
 
   Private Sub mHook_Mouse_XButton_Down(sender As Object, ByRef e As MouseHook.XButtonEventArgs) Handles mHook.Mouse_XButton_Down
-    If Button1Action IsNot Nothing And Button2Action IsNot Nothing Then
+    If selButton4Action IsNot Nothing And selButton5Action IsNot Nothing Then
       If e.Button = &H10000 Or e.Button = &H20000 Then
         tmrDetection.Tag = e.Button
         tmrDetection.Interval = 300
@@ -153,15 +157,15 @@ Public Class frmOptions
   End Sub
 
   Private Sub mHook_Mouse_XButton_Up(sender As Object, ByRef e As MouseHook.XButtonEventArgs) Handles mHook.Mouse_XButton_Up
-    If Button1Action IsNot Nothing And Button2Action IsNot Nothing Then
+    If selButton4Action IsNot Nothing And selButton5Action IsNot Nothing Then
       tmrDetection.Enabled = False
       If e.Button = &H10000 Then
-        For Each Key As Keys In Button1Action
+        For Each Key As Keys In selButton4Action
           If Not Key = Keys.None Then keybd_event(Key, MapVirtualKey(Key, 0), KEYEVENTF_KEYUP, 0)
         Next
         e.Handled = True
       ElseIf e.Button = &H20000 Then
-        For Each Key As Keys In Button2Action
+        For Each Key As Keys In selButton5Action
           If Not Key = Keys.None Then keybd_event(Key, MapVirtualKey(Key, 0), KEYEVENTF_KEYUP, 0)
         Next
         e.Handled = True
@@ -170,13 +174,13 @@ Public Class frmOptions
   End Sub
 
   Private Sub tmrDetection_Tick(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles tmrDetection.Tick
-    If Button1Action IsNot Nothing And Button2Action IsNot Nothing Then
+    If selButton4Action IsNot Nothing And selButton5Action IsNot Nothing Then
       If tmrDetection.Tag = &H10000 Then
-        For Each Key As Keys In Button1Action
+        For Each Key As Keys In selButton4Action
           If Not Key = Keys.None Then keybd_event(Key, MapVirtualKey(Key, 0), KEYEVENTF_KEYDOWN, 0)
         Next
       ElseIf tmrDetection.Tag = &H20000 Then
-        For Each Key As Keys In Button2Action
+        For Each Key As Keys In selButton5Action
           If Not Key = Keys.None Then keybd_event(Key, MapVirtualKey(Key, 0), KEYEVENTF_KEYDOWN, 0)
         Next
       End If
@@ -191,12 +195,12 @@ Public Class frmOptions
     End If
   End Sub
 
-  Private Sub txtExtra_GotFocus(ByVal sender As TextBox, ByVal e As System.EventArgs) Handles txtExtra1.GotFocus, txtExtra2.GotFocus
+  Private Sub txtExtra_GotFocus(ByVal sender As TextBox, ByVal e As System.EventArgs) Handles txtButton4.GotFocus, txtButton5.GotFocus
     sender.Tag = sender.Text
     sender.Text = vbNullString
   End Sub
 
-  Private Sub txtExtra_KeyDown(ByVal sender As TextBox, ByVal e As System.Windows.Forms.KeyEventArgs) Handles txtExtra1.KeyDown, txtExtra2.KeyDown
+  Private Sub txtExtra_KeyDown(ByVal sender As TextBox, ByVal e As System.Windows.Forms.KeyEventArgs) Handles txtButton4.KeyDown, txtButton5.KeyDown
     If sender.SelectionLength > 0 Then sender.SelectedText = vbNullString
     If sender.Text.Length > 0 Then
       sender.SelectionStart = 0
@@ -209,87 +213,156 @@ Public Class frmOptions
     sender.SelectionLength = 0
   End Sub
 
-  Private Sub txtExtra_LostFocus(ByVal sender As TextBox, ByVal e As System.EventArgs) Handles txtExtra1.LostFocus, txtExtra2.LostFocus
+  Private Sub txtExtra_LostFocus(ByVal sender As TextBox, ByVal e As System.EventArgs) Handles txtButton4.LostFocus, txtButton5.LostFocus
     If Not IsNothing(sender.Tag) And sender.Text = vbNullString Then
       sender.Text = sender.Tag
       sender.Tag = Nothing
     End If
   End Sub
 
-  Private Sub txtExtra1_TextChanged(ByVal sender As Object, ByVal e As System.EventArgs) Handles txtExtra1.TextChanged
+  Private Sub txtButton4_TextChanged(ByVal sender As Object, ByVal e As System.EventArgs) Handles txtButton4.TextChanged
     If lvProfiles.SelectedItems.Count > 0 Then
       Dim lvItem As ListViewItem = lvProfiles.SelectedItems(0)
-      lvItem.Text = txtExtra1.Text
-      If lvItem.Checked Then cmdSave.Enabled = True
+      lvItem.Text = txtButton4.Text
+      If loaded Then
+        If Not (txtButton4.Tag IsNot Nothing AndAlso String.IsNullOrEmpty(txtButton4.Text)) Then
+          cmdSave.Enabled = ChangesMade()
+        End If
+      End If
     End If
-    cmdClearExtra1.Enabled = Not txtExtra1.Text = "Disabled"
+    cmdClearExtra1.Enabled = Not txtButton4.Text = "Disabled"
   End Sub
 
   Private Sub cmdClearExtra1_DoubleClick(sender As Object, e As System.EventArgs) Handles cmdClearExtra1.Click
-    txtExtra1.Text = "Disabled"
-    txtExtra1.Tag = "Disabled"
+    txtButton4.Text = "Disabled"
+    txtButton4.Tag = "Disabled"
   End Sub
 
-  Private Sub txtExtra2_TextChanged(ByVal sender As Object, ByVal e As System.EventArgs) Handles txtExtra2.TextChanged
+  Private Sub txtButton5_TextChanged(ByVal sender As Object, ByVal e As System.EventArgs) Handles txtButton5.TextChanged
     If lvProfiles.SelectedItems.Count > 0 Then
       Dim lvItem As ListViewItem = lvProfiles.SelectedItems(0)
-      lvItem.SubItems(1).Text = txtExtra2.Text
-      If lvItem.Checked Then cmdSave.Enabled = True
+      lvItem.SubItems(1).Text = txtButton5.Text
+      If loaded Then
+        If Not (txtButton5.Tag IsNot Nothing AndAlso String.IsNullOrEmpty(txtButton5.Text)) Then
+          cmdSave.Enabled = ChangesMade()
+        End If
+      End If
     End If
-    cmdClearExtra2.Enabled = Not txtExtra2.Text = "Disabled"
+    cmdClearExtra2.Enabled = Not txtButton5.Text = "Disabled"
   End Sub
 
   Private Sub cmdClearExtra2_DoubleClick(sender As Object, e As System.EventArgs) Handles cmdClearExtra2.Click
-    txtExtra2.Text = "Disabled"
-    txtExtra2.Tag = "Disabled"
+    txtButton5.Text = "Disabled"
+    txtButton5.Tag = "Disabled"
   End Sub
 
   Private Sub lvProfiles_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles lvProfiles.SelectedIndexChanged
     If lvProfiles.SelectedItems.Count > 0 Then
-      txtExtra1.Enabled = True
-      txtExtra2.Enabled = True
-      cmdClearExtra1.Enabled = Not txtExtra1.Text = "Disabled"
-      cmdClearExtra2.Enabled = Not txtExtra2.Text = "Disabled"
+      txtButton4.Enabled = True
+      txtButton5.Enabled = True
+      cmdClearExtra1.Enabled = Not txtButton4.Text = "Disabled"
+      cmdClearExtra2.Enabled = Not txtButton5.Text = "Disabled"
     Else
-      txtExtra1.Enabled = False
-      txtExtra2.Enabled = False
+      txtButton4.Enabled = False
+      txtButton5.Enabled = False
       cmdClearExtra1.Enabled = False
       cmdClearExtra2.Enabled = False
     End If
   End Sub
 
+  Private Function GetRegKey(WriteEnabled As Boolean) As Microsoft.Win32.RegistryKey
+    If WriteEnabled Then
+      If Not My.Computer.Registry.CurrentUser.OpenSubKey("Software").GetSubKeyNames.Contains(Application.CompanyName) Then My.Computer.Registry.CurrentUser.OpenSubKey("Software", True).CreateSubKey(Application.CompanyName)
+      If Not My.Computer.Registry.CurrentUser.OpenSubKey("Software").OpenSubKey(Application.CompanyName).GetSubKeyNames.Contains(Application.ProductName) Then My.Computer.Registry.CurrentUser.OpenSubKey("Software", True).OpenSubKey(Application.CompanyName, True).CreateSubKey(Application.ProductName)
+      Return My.Computer.Registry.CurrentUser.OpenSubKey("Software", True).OpenSubKey(Application.CompanyName, True).OpenSubKey(Application.ProductName, True)
+    Else
+      If My.Computer.Registry.CurrentUser.OpenSubKey("Software").GetSubKeyNames.Contains(Application.CompanyName) Then
+        If My.Computer.Registry.CurrentUser.OpenSubKey("Software").OpenSubKey(Application.CompanyName).GetSubKeyNames.Contains(Application.ProductName) Then
+          Return My.Computer.Registry.CurrentUser.OpenSubKey("Software").OpenSubKey(Application.CompanyName).OpenSubKey(Application.ProductName)
+        End If
+      End If
+      Return Nothing
+    End If
+  End Function
+
+  Private Function GetRegProfiles(myRegKey As Microsoft.Win32.RegistryKey, writeEnabled As Boolean) As Microsoft.Win32.RegistryKey
+    Const sProfiles As String = "Profiles"
+    If writeEnabled Then
+      If myRegKey.SubKeyCount = 0 Then myRegKey.CreateSubKey(sProfiles)
+      If Not myRegKey.GetSubKeyNames.Contains(sProfiles) Then myRegKey.CreateSubKey(sProfiles)
+      Return myRegKey.OpenSubKey(sProfiles, True)
+    Else
+      If myRegKey.SubKeyCount > 0 Then
+        If myRegKey.GetSubKeyNames.Contains(sProfiles) Then
+          Return myRegKey.OpenSubKey(sProfiles)
+        End If
+      End If
+      Return Nothing
+    End If
+  End Function
+
+  Private Sub DelRegProfiles(myRegKey As Microsoft.Win32.RegistryKey)
+    Const sProfiles As String = "Profiles"
+    If myRegKey.SubKeyCount > 0 AndAlso myRegKey.GetSubKeyNames.Contains(sProfiles) Then myRegKey.DeleteSubKeyTree(sProfiles)
+  End Sub
+
+  Private Function ChangesMade() As Boolean
+    Dim myRegKey As Microsoft.Win32.RegistryKey = GetRegKey(False)
+    Dim regEnabled As Boolean = myRegKey.GetValue("Enabled", False)
+    If Not chkEnable.Checked = regEnabled Then Return True
+    If Not chkStart.Checked = My.Computer.Registry.CurrentUser.OpenSubKey("Software").OpenSubKey("Microsoft").OpenSubKey("Windows").OpenSubKey("CurrentVersion").OpenSubKey("Run").GetValueNames.Contains("MouseManager") Then Return True
+
+    Dim myProfileKey As Microsoft.Win32.RegistryKey = GetRegProfiles(myRegKey, False)
+    If Not myProfileKey.GetValue("Default", 0) = lvProfiles.CheckedIndices(0) Then Return True
+    If myProfileKey Is Nothing Then
+      If Not lvProfiles.Items.Count = 0 Then Return True
+    Else
+      If Not lvProfiles.Items.Count = myProfileKey.SubKeyCount Then Return True
+      Dim I As Integer = 0
+      For Each Key As String In myProfileKey.GetSubKeyNames()
+        If Not lvProfiles.Items(I).Text = myProfileKey.OpenSubKey(Key).GetValue("Button4", "PageUp") And
+           Not lvProfiles.Items(I).Text = myProfileKey.OpenSubKey(Key).GetValue("Button1", "PageUp") Then Return True
+        If Not lvProfiles.Items(I).SubItems(1).Text = myProfileKey.OpenSubKey(Key).GetValue("Button5", "PageDown") And
+           Not lvProfiles.Items(I).SubItems(1).Text = myProfileKey.OpenSubKey(Key).GetValue("Button2", "PageDown") Then Return True
+        I += 1
+      Next
+    End If
+    Return False
+  End Function
+
   Private Sub cmdSave_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cmdSave.Click
-    If Not My.Computer.Registry.CurrentUser.OpenSubKey("Software").GetSubKeyNames.Contains(Application.CompanyName) Then My.Computer.Registry.CurrentUser.OpenSubKey("Software", True).CreateSubKey(Application.CompanyName)
-    If Not My.Computer.Registry.CurrentUser.OpenSubKey("Software").OpenSubKey(Application.CompanyName).GetSubKeyNames.Contains(Application.ProductName) Then My.Computer.Registry.CurrentUser.OpenSubKey("Software", True).OpenSubKey(Application.CompanyName, True).CreateSubKey(Application.ProductName)
-    Dim myRegKey = My.Computer.Registry.CurrentUser.OpenSubKey("Software", True).OpenSubKey(Application.CompanyName, True).OpenSubKey(Application.ProductName, True)
+    Dim myRegKey = GetRegKey(True)
     myRegKey.SetValue("Enabled", chkEnable.Checked)
     If chkStart.Checked Then
       My.Computer.Registry.CurrentUser.OpenSubKey("Software").OpenSubKey("Microsoft").OpenSubKey("Windows").OpenSubKey("CurrentVersion").OpenSubKey("Run", True).SetValue("MouseManager", Application.ExecutablePath)
     Else
       My.Computer.Registry.CurrentUser.OpenSubKey("Software").OpenSubKey("Microsoft").OpenSubKey("Windows").OpenSubKey("CurrentVersion").OpenSubKey("Run", True).DeleteValue("MouseManager", False)
     End If
-    If myRegKey.SubKeyCount > 0 AndAlso myRegKey.GetSubKeyNames.Contains("Profiles") Then myRegKey.DeleteSubKeyTree("Profiles")
+    DelRegProfiles(myRegKey)
+    Dim myProfileKey As Microsoft.Win32.RegistryKey = GetRegProfiles(myRegKey, True)
     If lvProfiles.CheckedItems.Count > 0 Then
-      myRegKey.CreateSubKey("Profiles").SetValue("Default", lvProfiles.CheckedIndices(0))
+      myProfileKey.SetValue("Default", lvProfiles.CheckedIndices(0))
       If String.IsNullOrEmpty(lvProfiles.CheckedItems(0).Text) Then
-        Button1Action = New List(Of Keys)({Keys.None})
+        selButton4Action = New List(Of Keys)({Keys.None})
       Else
-        Button1Action = StrToKeys(lvProfiles.CheckedItems(0).Text)
+        selButton4Action = StrToKeys(lvProfiles.CheckedItems(0).Text)
       End If
       If String.IsNullOrEmpty(lvProfiles.CheckedItems(0).SubItems(1).Text) Then
-        Button2Action = New List(Of Keys)({Keys.None})
+        selButton5Action = New List(Of Keys)({Keys.None})
       Else
-        Button2Action = StrToKeys(lvProfiles.CheckedItems(0).SubItems(1).Text)
+        selButton5Action = StrToKeys(lvProfiles.CheckedItems(0).SubItems(1).Text)
       End If
     Else
-      Button1Action = Nothing
-      Button2Action = Nothing
+      selButton4Action = Nothing
+      selButton5Action = Nothing
     End If
     For I As Integer = 0 To lvProfiles.Items.Count - 1
-      Dim sButton1 As String = lvProfiles.Items(I).Text
-      Dim sButton2 As String = lvProfiles.Items(I).SubItems(1).Text
-      myRegKey.CreateSubKey("Profiles").CreateSubKey("Profile#" & I.ToString).SetValue("Button1", sButton1)
-      myRegKey.CreateSubKey("Profiles").CreateSubKey("Profile#" & I.ToString).SetValue("Button2", sButton2)
+      Dim sButton4 As String = lvProfiles.Items(I).Text
+      Dim sButton5 As String = lvProfiles.Items(I).SubItems(1).Text
+      Dim hmd5 As New Security.Cryptography.MD5Cng
+      Dim sAID As String = BitConverter.ToString(hmd5.ComputeHash(System.Text.Encoding.GetEncoding(28591).GetBytes(sButton4 & sButton5)), 0, 4).Replace("-", "")
+      myProfileKey.CreateSubKey("Profile" & sAID).SetValue("Button4", sButton4)
+      myProfileKey.CreateSubKey("Profile" & sAID).SetValue("Button5", sButton5)
     Next
     cmdSave.Enabled = False
     If delKey Then
@@ -315,11 +388,11 @@ Public Class frmOptions
     mnuNoProfile.Checked = Not chkEnable.Checked
     If lvProfiles.Items.Count > 0 Then mnuProfiles.MenuItems.Add(New MenuItem("-"))
     For I As Integer = 0 To lvProfiles.Items.Count - 1
-      Dim sButton1 As String = lvProfiles.Items(I).Text
-      Dim sButton2 As String = lvProfiles.Items(I).SubItems(1).Text
-      If String.IsNullOrEmpty(sButton1) Then sButton1 = "Disabled"
-      If String.IsNullOrEmpty(sButton2) Then sButton2 = "Disabled"
-      Dim mnuTmp As New MenuItem(sButton1 & "/" & sButton2, AddressOf ProfileItem_Click)
+      Dim sButton4 As String = lvProfiles.Items(I).Text
+      Dim sButton5 As String = lvProfiles.Items(I).SubItems(1).Text
+      If String.IsNullOrEmpty(sButton4) Then sButton4 = "Disabled"
+      If String.IsNullOrEmpty(sButton5) Then sButton5 = "Disabled"
+      Dim mnuTmp As New MenuItem(sButton4 & "/" & sButton5, AddressOf ProfileItem_Click)
       mnuTmp.Tag = lvProfiles.Items(I)
       mnuProfiles.MenuItems.Add(mnuTmp)
       If Not mnuNoProfile.Checked Then mnuTmp.Checked = lvProfiles.Items(I).Checked
@@ -353,7 +426,8 @@ Public Class frmOptions
     If lvProfiles.Items.Count = 0 Then
       chkEnable.Checked = False
       tbsManager.SelectedTab = tabProfiles
-      Exit Sub
+      cmdSave.Enabled = ChangesMade()
+      Return
     End If
     If chkEnable.Checked Then
       If lvProfiles.CheckedItems.Count = 0 Then
@@ -362,7 +436,6 @@ Public Class frmOptions
             If lvItem.Tag = True Then
               lvItem.Checked = True
               lvItem.Tag = Nothing
-              cmdSave.Enabled = True
             End If
           Next
         End If
@@ -372,10 +445,10 @@ Public Class frmOptions
         If lvItem.Checked Then
           lvItem.Tag = True
           lvItem.Checked = False
-          cmdSave.Enabled = True
         End If
       Next
     End If
+    If loaded Then cmdSave.Enabled = ChangesMade()
   End Sub
 
   Private Function StrToKeys(ByVal sKeys As String) As List(Of Keys)
@@ -1133,7 +1206,7 @@ Public Class frmOptions
   End Sub
 
   Private Sub chkStart_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkStart.CheckedChanged
-    cmdSave.Enabled = True
+    If loaded Then cmdSave.Enabled = ChangesMade()
   End Sub
 
   Private Sub tbsManager_SelectedIndexChanged(sender As Object, e As System.EventArgs) Handles tbsManager.SelectedIndexChanged

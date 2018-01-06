@@ -228,7 +228,7 @@ Public Class LinkLabel
       If MyBase.Cursor = Cursors.Hand Then
         SetCursor(LoadCursor(0, 32649))
         msg.Result = IntPtr.Zero
-        Exit Sub
+        Return
       End If
     End If
     MyBase.WndProc(msg)
