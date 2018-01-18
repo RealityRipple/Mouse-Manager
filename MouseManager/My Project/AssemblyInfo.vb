@@ -12,13 +12,13 @@ Imports System.Runtime.InteropServices
 <Assembly: AssemblyDescription("Mouse Manager maps keyboard commands to fourth and fifth buttons on a 4-button, 5-button, or Tilt-wheel mouse.")> 
 <Assembly: AssemblyCompany("RealityRipple Software")> 
 <Assembly: AssemblyProduct("Mouse Manager")> 
-<Assembly: AssemblyCopyright("https://realityripple.com/Software/Applications/Mouse-Manager/")> 
+<Assembly: AssemblyCopyright("http://realityripple.com/Software/Applications/Mouse-Manager/")> 
 <Assembly: AssemblyTrademark("Mouse Manager by RealityRipple Software")> 
 
 <Assembly: ComVisible(False)>
 
 'The following GUID is for the ID of the typelib if this project is exposed to COM
-<Assembly: Guid("a4c62425-1639-4a43-912b-66131f3b6ce3")> 
+<Assembly: Guid("9135592C-4B41-5177-9650-46CE32B74205")> 
 
 ' Version information for an assembly consists of the following four values:
 '
@@ -31,5 +31,5 @@ Imports System.Runtime.InteropServices
 ' by using the '*' as shown below:
 ' <Assembly: AssemblyVersion("1.0.*")> 
 
-<Assembly: AssemblyVersion("1.4")> 
-<Assembly: AssemblyFileVersion("1.4")> 
+<Assembly: AssemblyVersion("1.5")> 
+<Assembly: AssemblyFileVersion("1.5")> 

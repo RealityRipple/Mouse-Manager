@@ -308,18 +308,23 @@ Public Class frmOptions
 
   Private Function ChangesMade() As Boolean
     Dim myRegKey As Microsoft.Win32.RegistryKey = GetRegKey(False)
+    If myRegKey Is Nothing Then Return True
     Dim regEnabled As Boolean = myRegKey.GetValue("Enabled", False)
     If Not chkEnable.Checked = regEnabled Then Return True
     If Not chkStart.Checked = My.Computer.Registry.CurrentUser.OpenSubKey("Software").OpenSubKey("Microsoft").OpenSubKey("Windows").OpenSubKey("CurrentVersion").OpenSubKey("Run").GetValueNames.Contains("MouseManager") Then Return True
-
     Dim myProfileKey As Microsoft.Win32.RegistryKey = GetRegProfiles(myRegKey, False)
-    If Not myProfileKey.GetValue("Default", 0) = lvProfiles.CheckedIndices(0) Then Return True
+    If lvProfiles.CheckedItems.Count = 0 Then
+      If Not myProfileKey.GetValue("Default", -1) = -1 Then Return True
+    Else
+      If Not myProfileKey.GetValue("Default", 0) = lvProfiles.CheckedIndices(0) Then Return True
+    End If
     If myProfileKey Is Nothing Then
       If Not lvProfiles.Items.Count = 0 Then Return True
     Else
       If Not lvProfiles.Items.Count = myProfileKey.SubKeyCount Then Return True
       Dim I As Integer = 0
       For Each Key As String In myProfileKey.GetSubKeyNames()
+        If lvProfiles.Items.Count <= I Then Return True
         If Not lvProfiles.Items(I).Text = myProfileKey.OpenSubKey(Key).GetValue("Button4", "PageUp") And
            Not lvProfiles.Items(I).Text = myProfileKey.OpenSubKey(Key).GetValue("Button1", "PageUp") Then Return True
         If Not lvProfiles.Items(I).SubItems(1).Text = myProfileKey.OpenSubKey(Key).GetValue("Button5", "PageDown") And
@@ -341,7 +346,11 @@ Public Class frmOptions
     DelRegProfiles(myRegKey)
     Dim myProfileKey As Microsoft.Win32.RegistryKey = GetRegProfiles(myRegKey, True)
     If lvProfiles.CheckedItems.Count > 0 Then
-      myProfileKey.SetValue("Default", lvProfiles.CheckedIndices(0))
+      If lvProfiles.CheckedIndices.Count > 0 Then
+        myProfileKey.SetValue("Default", lvProfiles.CheckedIndices(0))
+      Else
+        myProfileKey.DeleteValue("Default", False)
+      End If
       If String.IsNullOrEmpty(lvProfiles.CheckedItems(0).Text) Then
         selButton4Action = New List(Of Keys)({Keys.None})
       Else
@@ -355,6 +364,7 @@ Public Class frmOptions
     Else
       selButton4Action = Nothing
       selButton5Action = Nothing
+      myProfileKey.DeleteValue("Default", False)
     End If
     For I As Integer = 0 To lvProfiles.Items.Count - 1
       Dim sButton4 As String = lvProfiles.Items(I).Text
@@ -1198,11 +1208,15 @@ Public Class frmOptions
   End Function
 
   Private Sub lblWebsite_LinkClicked(ByVal sender As System.Object, ByVal e As System.Windows.Forms.LinkLabelLinkClickedEventArgs) Handles lblWebsite.LinkClicked
-    Process.Start("https://realityripple.com")
+    Process.Start("http://realityripple.com")
   End Sub
 
   Private Sub cmdDonate_Click(sender As System.Object, e As System.EventArgs) Handles cmdDonate.Click
-    Process.Start("https://realityripple.com/donate.php?itm=Mouse+Manager")
+    Process.Start("http://realityripple.com/donate.php?itm=Mouse+Manager")
+  End Sub
+
+  Private Sub lblAdvancedWebsite_LinkClicked(sender As System.Object, e As System.Windows.Forms.LinkLabelLinkClickedEventArgs) Handles lblAdvancedWebsite.LinkClicked
+    Process.Start("http://realityripple.com/Software/Applications/Advanced-Mouse-Manager/")
   End Sub
 
   Private Sub chkStart_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkStart.CheckedChanged

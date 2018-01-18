@@ -29,6 +29,9 @@ Partial Class frmOptions
     Me.pnlSettings = New System.Windows.Forms.TableLayoutPanel()
     Me.chkStart = New System.Windows.Forms.CheckBox()
     Me.chkEnable = New System.Windows.Forms.CheckBox()
+    Me.pnlAdvanced = New System.Windows.Forms.TableLayoutPanel()
+    Me.lblAdvanced = New System.Windows.Forms.Label()
+    Me.lblAdvancedWebsite = New MouseManager.LinkLabel()
     Me.tabProfiles = New System.Windows.Forms.TabPage()
     Me.pnlProfiles = New System.Windows.Forms.TableLayoutPanel()
     Me.lblButton4 = New System.Windows.Forms.Label()
@@ -64,6 +67,7 @@ Partial Class frmOptions
     Me.tbsManager.SuspendLayout()
     Me.tabSettings.SuspendLayout()
     Me.pnlSettings.SuspendLayout()
+    Me.pnlAdvanced.SuspendLayout()
     Me.tabProfiles.SuspendLayout()
     Me.pnlProfiles.SuspendLayout()
     Me.pnlAddRemove.SuspendLayout()
@@ -102,17 +106,18 @@ Partial Class frmOptions
     'pnlSettings
     '
     Me.pnlSettings.ColumnCount = 1
-    Me.pnlSettings.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50.0!))
-    Me.pnlSettings.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20.0!))
+    Me.pnlSettings.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100.0!))
     Me.pnlSettings.Controls.Add(Me.chkStart, 0, 1)
     Me.pnlSettings.Controls.Add(Me.chkEnable, 0, 0)
+    Me.pnlSettings.Controls.Add(Me.pnlAdvanced, 0, 2)
     Me.pnlSettings.Dock = System.Windows.Forms.DockStyle.Fill
     Me.pnlSettings.Location = New System.Drawing.Point(3, 3)
     Me.pnlSettings.Margin = New System.Windows.Forms.Padding(0)
     Me.pnlSettings.Name = "pnlSettings"
-    Me.pnlSettings.RowCount = 2
-    Me.pnlSettings.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20.0!))
-    Me.pnlSettings.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20.0!))
+    Me.pnlSettings.RowCount = 3
+    Me.pnlSettings.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333!))
+    Me.pnlSettings.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333!))
+    Me.pnlSettings.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333!))
     Me.pnlSettings.Size = New System.Drawing.Size(302, 161)
     Me.pnlSettings.TabIndex = 0
     '
@@ -121,7 +126,7 @@ Partial Class frmOptions
     Me.chkStart.Anchor = System.Windows.Forms.AnchorStyles.Left
     Me.chkStart.AutoSize = True
     Me.chkStart.FlatStyle = System.Windows.Forms.FlatStyle.System
-    Me.chkStart.Location = New System.Drawing.Point(3, 111)
+    Me.chkStart.Location = New System.Drawing.Point(3, 70)
     Me.chkStart.Name = "chkStart"
     Me.chkStart.Size = New System.Drawing.Size(123, 18)
     Me.chkStart.TabIndex = 1
@@ -133,12 +138,50 @@ Partial Class frmOptions
     Me.chkEnable.Anchor = System.Windows.Forms.AnchorStyles.Left
     Me.chkEnable.AutoSize = True
     Me.chkEnable.FlatStyle = System.Windows.Forms.FlatStyle.System
-    Me.chkEnable.Location = New System.Drawing.Point(3, 31)
+    Me.chkEnable.Location = New System.Drawing.Point(3, 17)
     Me.chkEnable.Name = "chkEnable"
     Me.chkEnable.Size = New System.Drawing.Size(145, 18)
     Me.chkEnable.TabIndex = 0
     Me.chkEnable.Text = "&Enable Mouse Manager"
     Me.chkEnable.UseVisualStyleBackColor = True
+    '
+    'pnlAdvanced
+    '
+    Me.pnlAdvanced.ColumnCount = 1
+    Me.pnlAdvanced.ColumnStyles.Add(New System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100.0!))
+    Me.pnlAdvanced.Controls.Add(Me.lblAdvanced, 0, 0)
+    Me.pnlAdvanced.Controls.Add(Me.lblAdvancedWebsite, 0, 1)
+    Me.pnlAdvanced.Dock = System.Windows.Forms.DockStyle.Fill
+    Me.pnlAdvanced.Location = New System.Drawing.Point(3, 109)
+    Me.pnlAdvanced.Name = "pnlAdvanced"
+    Me.pnlAdvanced.RowCount = 2
+    Me.pnlAdvanced.RowStyles.Add(New System.Windows.Forms.RowStyle())
+    Me.pnlAdvanced.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100.0!))
+    Me.pnlAdvanced.Size = New System.Drawing.Size(296, 49)
+    Me.pnlAdvanced.TabIndex = 2
+    '
+    'lblAdvanced
+    '
+    Me.lblAdvanced.AutoSize = True
+    Me.lblAdvanced.Location = New System.Drawing.Point(3, 0)
+    Me.lblAdvanced.Name = "lblAdvanced"
+    Me.lblAdvanced.Size = New System.Drawing.Size(235, 26)
+    Me.lblAdvanced.TabIndex = 0
+    Me.lblAdvanced.Text = "For more features such as Application Profiles," & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "Automatic Updates, and Translati" & _
+    "ons, check out"
+    '
+    'lblAdvancedWebsite
+    '
+    Me.lblAdvancedWebsite.Anchor = System.Windows.Forms.AnchorStyles.Right
+    Me.lblAdvancedWebsite.AutoSize = True
+    Me.lblAdvancedWebsite.Cursor = System.Windows.Forms.Cursors.Hand
+    Me.lblAdvancedWebsite.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Underline)
+    Me.lblAdvancedWebsite.ForeColor = System.Drawing.Color.MediumBlue
+    Me.lblAdvancedWebsite.Location = New System.Drawing.Point(157, 31)
+    Me.lblAdvancedWebsite.Name = "lblAdvancedWebsite"
+    Me.lblAdvancedWebsite.Size = New System.Drawing.Size(136, 13)
+    Me.lblAdvancedWebsite.TabIndex = 1
+    Me.lblAdvancedWebsite.Text = "Advanced Mouse Manager"
     '
     'tabProfiles
     '
@@ -407,13 +450,13 @@ Partial Class frmOptions
     Me.lblWebsite.Cursor = System.Windows.Forms.Cursors.Hand
     Me.lblWebsite.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Underline)
     Me.lblWebsite.ForeColor = System.Drawing.Color.MediumBlue
-    Me.lblWebsite.Location = New System.Drawing.Point(95, 149)
+    Me.lblWebsite.Location = New System.Drawing.Point(97, 149)
     Me.lblWebsite.Margin = New System.Windows.Forms.Padding(3, 5, 3, 5)
     Me.lblWebsite.Name = "lblWebsite"
-    Me.lblWebsite.Size = New System.Drawing.Size(118, 13)
+    Me.lblWebsite.Size = New System.Drawing.Size(113, 13)
     Me.lblWebsite.TabIndex = 3
     Me.lblWebsite.TabStop = True
-    Me.lblWebsite.Text = "https://realityripple.com"
+    Me.lblWebsite.Text = "http://realityripple.com"
     '
     'mnuTray
     '
@@ -513,6 +556,8 @@ Partial Class frmOptions
     Me.tabSettings.ResumeLayout(False)
     Me.pnlSettings.ResumeLayout(False)
     Me.pnlSettings.PerformLayout()
+    Me.pnlAdvanced.ResumeLayout(False)
+    Me.pnlAdvanced.PerformLayout()
     Me.tabProfiles.ResumeLayout(False)
     Me.pnlProfiles.ResumeLayout(False)
     Me.pnlProfiles.PerformLayout()
@@ -561,6 +606,9 @@ Partial Class frmOptions
   Friend WithEvents cmdDonate As System.Windows.Forms.Button
   Friend WithEvents cmdClearExtra1 As System.Windows.Forms.Button
   Friend WithEvents cmdClearExtra2 As System.Windows.Forms.Button
+  Friend WithEvents pnlAdvanced As System.Windows.Forms.TableLayoutPanel
+  Friend WithEvents lblAdvanced As System.Windows.Forms.Label
+  Friend WithEvents lblAdvancedWebsite As MouseManager.LinkLabel
 
 
 End Class
