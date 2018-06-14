@@ -14,6 +14,12 @@ Public Class frmOptions
   Private IntervalShift As Integer
   Private delKey As Boolean = False
   Private loaded As Boolean = False
+  Private Const HomeURL As String = "http://realityripple.com"
+  Private Const HomeSURL As String = "https://realityripple.com"
+  Private Const DonateURL As String = "http://realityripple.com/donate.php?itm=Mouse+Manager"
+  Private Const DonateSURL As String = "https://realityripple.com/donate.php?itm=Mouse+Manager"
+  Private Const PurchaseURL As String = "http://realityripple.com/Software/Applications/Advanced-Mouse-Manager/"
+  Private Const PurchaseSURL As String = "https://realityripple.com/Software/Applications/Advanced-Mouse-Manager/"
 
   Private Sub frmOptions_FormClosing(ByVal sender As Object, ByVal e As System.Windows.Forms.FormClosingEventArgs) Handles Me.FormClosing
     If e.CloseReason = CloseReason.UserClosing Then
@@ -67,6 +73,11 @@ Public Class frmOptions
       End If
     End If
     lblVersion.Text = "v" & Application.ProductVersion
+    If OSSupport.NativeTLS12 Then
+      lblWebsite.Text = HomeSURL
+    Else
+      lblWebsite.Text = HomeURL
+    End If
     cmdSave.Enabled = False
     cmdRem.Enabled = False
     loaded = True
@@ -1208,15 +1219,21 @@ Public Class frmOptions
   End Function
 
   Private Sub lblWebsite_LinkClicked(ByVal sender As System.Object, ByVal e As System.Windows.Forms.LinkLabelLinkClickedEventArgs) Handles lblWebsite.LinkClicked
-    Process.Start("http://realityripple.com")
+    Dim linkURL As String = HomeURL
+    If OSSupport.NativeTLS12 Then linkURL = HomeSURL
+    Process.Start(linkURL)
   End Sub
 
   Private Sub cmdDonate_Click(sender As System.Object, e As System.EventArgs) Handles cmdDonate.Click
-    Process.Start("http://realityripple.com/donate.php?itm=Mouse+Manager")
+    Dim linkURL As String = DonateURL
+    If OSSupport.NativeTLS12 Then linkURL = DonateSURL
+    Process.Start(linkURL)
   End Sub
 
   Private Sub lblAdvancedWebsite_LinkClicked(sender As System.Object, e As System.Windows.Forms.LinkLabelLinkClickedEventArgs) Handles lblAdvancedWebsite.LinkClicked
-    Process.Start("http://realityripple.com/Software/Applications/Advanced-Mouse-Manager/")
+    Dim linkURL As String = PurchaseURL
+    If OSSupport.NativeTLS12 Then linkURL = PurchaseSURL
+    Process.Start(linkURL)
   End Sub
 
   Private Sub chkStart_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkStart.CheckedChanged
