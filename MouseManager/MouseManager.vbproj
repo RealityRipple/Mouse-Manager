@@ -128,7 +128,7 @@
     <Compile Include="clsLinkLabel.vb">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="clsMouseHook.vb" />
+    <Compile Include="Classes\clsMouseHook.vb" />
     <Compile Include="frmOptions.Designer.vb">
       <DependentUpon>frmOptions.vb</DependentUpon>
     </Compile>
