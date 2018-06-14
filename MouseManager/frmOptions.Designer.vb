@@ -277,6 +277,7 @@ Partial Class frmOptions
     Me.txtButton5.Enabled = False
     Me.txtButton5.Location = New System.Drawing.Point(94, 110)
     Me.txtButton5.Name = "txtButton5"
+    Me.txtButton5.ShortcutsEnabled = False
     Me.txtButton5.Size = New System.Drawing.Size(183, 20)
     Me.txtButton5.TabIndex = 5
     Me.txtButton5.TabStop = False
@@ -289,6 +290,7 @@ Partial Class frmOptions
     Me.txtButton4.Enabled = False
     Me.txtButton4.Location = New System.Drawing.Point(94, 79)
     Me.txtButton4.Name = "txtButton4"
+    Me.txtButton4.ShortcutsEnabled = False
     Me.txtButton4.Size = New System.Drawing.Size(183, 20)
     Me.txtButton4.TabIndex = 2
     Me.txtButton4.TabStop = False
