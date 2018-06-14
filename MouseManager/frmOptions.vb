@@ -1,13 +1,13 @@
 ﻿Imports System.Runtime.InteropServices
 Public Class frmOptions
   <DllImport("user32", CharSet:=CharSet.Auto)> _
-  Private Shared Sub keybd_event(ByVal bVk As Byte, ByVal bScan As Byte, ByVal dwFlags As Long, ByVal dwExtraInfo As Long)
+  Private Shared Sub keybd_event(ByVal bVk As Byte, ByVal bScan As Byte, ByVal dwFlags As UInt32, ByVal dwExtraInfo As UIntPtr)
   End Sub
   <DllImport("user32", CharSet:=CharSet.Auto)> _
   Public Shared Function MapVirtualKey(ByVal wCode As Long, ByVal wMapType As Long) As Byte
   End Function
-  Public Const KEYEVENTF_KEYDOWN As Long = &H0
-  Public Const KEYEVENTF_KEYUP As Long = &H2
+  Public Const KEYEVENTF_KEYDOWN As UInt32 = &H0
+  Public Const KEYEVENTF_KEYUP As UInt32 = &H2
   Private WithEvents mHook As MouseHook
   Private selButton4Action As New List(Of Keys)
   Private selButton5Action As New List(Of Keys)
@@ -172,12 +172,12 @@ Public Class frmOptions
       tmrDetection.Enabled = False
       If e.Button = &H10000 Then
         For Each Key As Keys In selButton4Action
-          If Not Key = Keys.None Then keybd_event(Key, MapVirtualKey(Key, 0), KEYEVENTF_KEYUP, 0)
+          If Not Key = Keys.None Then keybd_event(Key, MapVirtualKey(Key, 0), KEYEVENTF_KEYUP, UIntPtr.Zero)
         Next
         e.Handled = True
       ElseIf e.Button = &H20000 Then
         For Each Key As Keys In selButton5Action
-          If Not Key = Keys.None Then keybd_event(Key, MapVirtualKey(Key, 0), KEYEVENTF_KEYUP, 0)
+          If Not Key = Keys.None Then keybd_event(Key, MapVirtualKey(Key, 0), KEYEVENTF_KEYUP, UIntPtr.Zero)
         Next
         e.Handled = True
       End If
@@ -188,11 +188,11 @@ Public Class frmOptions
     If selButton4Action IsNot Nothing And selButton5Action IsNot Nothing Then
       If tmrDetection.Tag = &H10000 Then
         For Each Key As Keys In selButton4Action
-          If Not Key = Keys.None Then keybd_event(Key, MapVirtualKey(Key, 0), KEYEVENTF_KEYDOWN, 0)
+          If Not Key = Keys.None Then keybd_event(Key, MapVirtualKey(Key, 0), KEYEVENTF_KEYDOWN, UIntPtr.Zero)
         Next
       ElseIf tmrDetection.Tag = &H20000 Then
         For Each Key As Keys In selButton5Action
-          If Not Key = Keys.None Then keybd_event(Key, MapVirtualKey(Key, 0), KEYEVENTF_KEYDOWN, 0)
+          If Not Key = Keys.None Then keybd_event(Key, MapVirtualKey(Key, 0), KEYEVENTF_KEYDOWN, UIntPtr.Zero)
         Next
       End If
       If tmrDetection.Interval > 75 Then tmrDetection.Interval -= IntervalShift
