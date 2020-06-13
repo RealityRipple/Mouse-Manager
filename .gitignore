@@ -26,5 +26,6 @@ obj/
 _ReSharper*/
 [Tt]est[Rr]esult*
 *.vssscc
+.vs/
 $tf*/
 Setup/
