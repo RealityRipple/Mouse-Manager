@@ -9,9 +9,10 @@ Public Class frmOptions
   Public Const KEYEVENTF_KEYDOWN As UInt32 = &H0
   Public Const KEYEVENTF_KEYUP As UInt32 = &H2
   Private WithEvents mHook As MouseHook
+  Private tDetection As Threading.Timer
   Private selButton4Action As New List(Of Keys)
   Private selButton5Action As New List(Of Keys)
-  Private IntervalShift As Integer
+  Private MouseXDown As UInteger = 0
   Private delKey As Boolean = False
   Private loaded As Boolean = False
   Private Const HomeURL As String = "http://realityripple.com"
@@ -154,56 +155,86 @@ Public Class frmOptions
     Me.Show()
   End Sub
 
-  Private Sub mHook_Mouse_XButton_Down(sender As Object, ByRef e As MouseHook.XButtonEventArgs) Handles mHook.Mouse_XButton_Down
-    If selButton4Action IsNot Nothing And selButton5Action IsNot Nothing Then
-      If e.Button = &H10000 Or e.Button = &H20000 Then
-        tmrDetection.Tag = e.Button
-        tmrDetection.Interval = 300
-        IntervalShift = 50
-        tmrDetection.Enabled = True
-        tmrDetection_Tick(tmrDetection, New EventArgs)
-        e.Handled = True
-      End If
+  Private ReadOnly Property KeyboardDelay As UInteger
+    Get
+      Select Case SystemInformation.KeyboardDelay
+        Case 0 : Return 250
+        Case 1 : Return 500
+        Case 2 : Return 750
+        Case 3 : Return 1000
+      End Select
+      Return 500
+    End Get
+  End Property
+
+  Private ReadOnly Property KeyboardRepeat As UInteger
+    Get
+      Return ((31 - SystemInformation.KeyboardSpeed) * 12.258) + 20
+    End Get
+  End Property
+
+  Private Sub KeyHold()
+    If tDetection IsNot Nothing Then
+      tDetection.Dispose()
+      tDetection = Nothing
     End If
+    tDetection_Tick(Nothing)
+    tDetection = New Threading.Timer(New Threading.TimerCallback(AddressOf tDetection_Tick), Nothing, KeyboardDelay, KeyboardRepeat)
+  End Sub
+
+  Private Sub ClearKeyHold()
+    If tDetection IsNot Nothing Then
+      tDetection.Dispose()
+      tDetection = Nothing
+    End If
+    MouseXDown = 0
+  End Sub
+
+  Private Sub mHook_Mouse_XButton_Down(sender As Object, ByRef e As MouseHook.XButtonEventArgs) Handles mHook.Mouse_XButton_Down
+    If Not (e.Button = &H10000 Or e.Button = &H20000) Then Return
+    If Not MouseXDown = 0 Then Return
+    If selButton4Action Is Nothing Then Return
+    If selButton5Action Is Nothing Then Return
+    MouseXDown = e.Button
+    KeyHold()
+    e.Handled = True
   End Sub
 
   Private Sub mHook_Mouse_XButton_Up(sender As Object, ByRef e As MouseHook.XButtonEventArgs) Handles mHook.Mouse_XButton_Up
-    If selButton4Action IsNot Nothing And selButton5Action IsNot Nothing Then
-      tmrDetection.Enabled = False
-      If e.Button = &H10000 Then
-        For Each Key As Keys In selButton4Action
-          If Not Key = Keys.None Then keybd_event(Key, MapVirtualKey(Key, 0), KEYEVENTF_KEYUP, UIntPtr.Zero)
-        Next
-        e.Handled = True
-      ElseIf e.Button = &H20000 Then
-        For Each Key As Keys In selButton5Action
-          If Not Key = Keys.None Then keybd_event(Key, MapVirtualKey(Key, 0), KEYEVENTF_KEYUP, UIntPtr.Zero)
-        Next
-        e.Handled = True
-      End If
-    End If
+    If Not (e.Button = &H10000 Or e.Button = &H20000) Then Return
+    If MouseXDown = 0 Then Return
+    If selButton4Action Is Nothing Then Return
+    If selButton5Action Is Nothing Then Return
+    Dim useAction As List(Of Keys) = Nothing
+    Select Case e.Button
+      Case &H10000
+        useAction = selButton4Action
+      Case &H20000
+        useAction = selButton5Action
+    End Select
+    ClearKeyHold()
+    If useAction Is Nothing Then Return
+    For Each Key As Keys In useAction
+      If Not Key = Keys.None Then keybd_event(Key, MapVirtualKey(Key, 0), KEYEVENTF_KEYUP, UIntPtr.Zero)
+    Next
+    e.Handled = True
   End Sub
 
-  Private Sub tmrDetection_Tick(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles tmrDetection.Tick
-    If selButton4Action IsNot Nothing And selButton5Action IsNot Nothing Then
-      If tmrDetection.Tag = &H10000 Then
-        For Each Key As Keys In selButton4Action
-          If Not Key = Keys.None Then keybd_event(Key, MapVirtualKey(Key, 0), KEYEVENTF_KEYDOWN, UIntPtr.Zero)
-        Next
-      ElseIf tmrDetection.Tag = &H20000 Then
-        For Each Key As Keys In selButton5Action
-          If Not Key = Keys.None Then keybd_event(Key, MapVirtualKey(Key, 0), KEYEVENTF_KEYDOWN, UIntPtr.Zero)
-        Next
-      End If
-      If tmrDetection.Interval > 75 Then tmrDetection.Interval -= IntervalShift
-      If IntervalShift = 50 Then
-        IntervalShift = 75
-      ElseIf IntervalShift = 75 Then
-        IntervalShift = 100
-      Else
-        IntervalShift = 0
-      End If
-    End If
+  Private Sub tDetection_Tick(ByVal state As Object)
+    If Not (MouseXDown = &H10000 Or MouseXDown = &H20000) Then Return
+    If selButton4Action Is Nothing Then Return
+    If selButton5Action Is Nothing Then Return
+    Dim useAction As List(Of Keys) = Nothing
+    Select Case MouseXDown
+      Case &H10000
+        useAction = selButton4Action
+      Case &H20000
+        useAction = selButton5Action
+    End Select
+    If useAction Is Nothing Then Return
+    For Each Key As Keys In useAction
+      If Not Key = Keys.None Then keybd_event(Key, MapVirtualKey(Key, 0), KEYEVENTF_KEYDOWN, UIntPtr.Zero)
+    Next
   End Sub
 
   Private Sub txtExtra_GotFocus(ByVal sender As TextBox, ByVal e As System.EventArgs) Handles txtButton4.GotFocus, txtButton5.GotFocus
