@@ -12,7 +12,8 @@ Public Class frmOptions
   Private tDetection As Threading.Timer
   Private selButton4Action As New List(Of Keys)
   Private selButton5Action As New List(Of Keys)
-  Private MouseXDown As UInteger = 0
+  Private Mouse4Down As UShort = 0
+  Private Mouse5Down As UShort = 0
   Private delKey As Boolean = False
   Private loaded As Boolean = False
   Private Const HomeURL As String = "http://realityripple.com"
@@ -183,34 +184,58 @@ Public Class frmOptions
   End Sub
 
   Private Sub ClearKeyHold()
+    If Not Mouse4Down = 0 Then Return
+    If Not Mouse5Down = 0 Then Return
     If tDetection IsNot Nothing Then
       tDetection.Dispose()
       tDetection = Nothing
     End If
-    MouseXDown = 0
   End Sub
 
   Private Sub mHook_Mouse_XButton_Down(sender As Object, ByRef e As MouseHook.XButtonEventArgs) Handles mHook.Mouse_XButton_Down
-    If Not (e.Button = &H10000 Or e.Button = &H20000) Then Return
-    If Not MouseXDown = 0 Then Return
-    If selButton4Action Is Nothing Then Return
-    If selButton5Action Is Nothing Then Return
-    MouseXDown = e.Button
+    Select Case e.Button
+      Case &H10000
+        If selButton4Action Is Nothing Then Return
+        If Not Mouse4Down = 0 Then Return
+        If Mouse5Down = 0 Then
+          Mouse4Down = 1
+        Else
+          Mouse4Down = 2
+        End If
+      Case &H20000
+        If selButton5Action Is Nothing Then Return
+        If Not Mouse5Down = 0 Then Return
+        If Mouse4Down = 0 Then
+          Mouse5Down = 1
+        Else
+          Mouse5Down = 2
+        End If
+      Case Else
+        Return
+    End Select
     KeyHold()
     e.Handled = True
   End Sub
 
   Private Sub mHook_Mouse_XButton_Up(sender As Object, ByRef e As MouseHook.XButtonEventArgs) Handles mHook.Mouse_XButton_Up
-    If Not (e.Button = &H10000 Or e.Button = &H20000) Then Return
-    If MouseXDown = 0 Then Return
-    If selButton4Action Is Nothing Then Return
-    If selButton5Action Is Nothing Then Return
     Dim useAction As List(Of Keys) = Nothing
     Select Case e.Button
       Case &H10000
-        useAction = selButton4Action
+        If Mouse4Down = 0 Then Return
+        If selButton4Action Is Nothing Then Return
+        useAction = New List(Of Keys)
+        useAction.AddRange(selButton4Action)
+        If Mouse5Down = 2 Then Mouse5Down = 1
+        Mouse4Down = 0
       Case &H20000
-        useAction = selButton5Action
+        If Mouse5Down = 0 Then Return
+        If selButton5Action Is Nothing Then Return
+        useAction = New List(Of Keys)
+        useAction.AddRange(selButton5Action)
+        If Mouse4Down = 2 Then Mouse4Down = 1
+        Mouse5Down = 0
+      Case Else
+        Return
     End Select
     ClearKeyHold()
     If useAction Is Nothing Then Return
@@ -221,16 +246,22 @@ Public Class frmOptions
   End Sub
 
   Private Sub tDetection_Tick(ByVal state As Object)
-    If Not (MouseXDown = &H10000 Or MouseXDown = &H20000) Then Return
-    If selButton4Action Is Nothing Then Return
-    If selButton5Action Is Nothing Then Return
+    If Mouse4Down = 0 And Mouse5Down = 0 Then Return
+    If (Not Mouse4Down = 0) And (selButton4Action Is Nothing) Then Return
+    If (Not Mouse5Down = 0) And (selButton5Action Is Nothing) Then Return
     Dim useAction As List(Of Keys) = Nothing
-    Select Case MouseXDown
-      Case &H10000
-        useAction = selButton4Action
-      Case &H20000
-        useAction = selButton5Action
-    End Select
+    If Mouse4Down = 1 Then
+      useAction = New List(Of Keys)
+      useAction.AddRange(selButton4Action)
+    ElseIf Mouse5Down = 1 Then
+      useAction = New List(Of Keys)
+      useAction.AddRange(selButton5Action)
+    End If
+    If Mouse4Down = 2 Then
+      useAction.AddRange(selButton4Action)
+    ElseIf Mouse5Down = 2 Then
+      useAction.AddRange(selButton5Action)
+    End If
     If useAction Is Nothing Then Return
     For Each Key As Keys In useAction
       If Not Key = Keys.None Then keybd_event(Key, MapVirtualKey(Key, 0), KEYEVENTF_KEYDOWN, UIntPtr.Zero)
