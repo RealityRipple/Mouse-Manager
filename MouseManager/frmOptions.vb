@@ -9,6 +9,7 @@ Public Class frmOptions
   Public Const KEYEVENTF_KEYDOWN As UInt32 = &H0
   Public Const KEYEVENTF_KEYUP As UInt32 = &H2
   Private WithEvents mHook As MouseHook
+  Private WithEvents kHook As KeyboardHook
   Private tDetection As Threading.Timer
   Private selButton4Action As New List(Of Keys)
   Private selButton5Action As New List(Of Keys)
@@ -90,6 +91,18 @@ Public Class frmOptions
       lvProfiles.Columns(0).Width = CInt(Math.Floor(lvProfiles.ClientSize.Width / 2) - 1)
       lvProfiles.Columns(1).Width = CInt(Math.Floor(lvProfiles.ClientSize.Width / 2) - 1)
     End If
+  End Sub
+
+  Private Sub frmOptions_Deactivate(sender As Object, e As EventArgs) Handles Me.Deactivate
+    If chkEnable.Checked AndAlso mHook Is Nothing Then mHook = New MouseHook()
+    If Not IsNothing(kHook) Then kHook.BlockWin = False
+  End Sub
+
+  Private Sub frmOptions_Activated(sender As Object, e As EventArgs) Handles Me.Activated
+    If Me.Visible Then
+      If mHook IsNot Nothing Then mHook = Nothing
+    End If
+    If Not IsNothing(kHook) AndAlso (Me.ActiveControl.Name = txtButton4.Name Or Me.ActiveControl.Name = txtButton5.Name) Then kHook.BlockWin = True
   End Sub
 
   Private Sub cmdAdd_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cmdAdd.Click
@@ -271,6 +284,8 @@ Public Class frmOptions
   Private Sub txtExtra_GotFocus(ByVal sender As TextBox, ByVal e As System.EventArgs) Handles txtButton4.GotFocus, txtButton5.GotFocus
     sender.Tag = sender.Text
     sender.Text = vbNullString
+    If IsNothing(kHook) Then kHook = New KeyboardHook()
+    kHook.BlockWin = True
   End Sub
 
   Private Sub txtExtra_KeyDown(ByVal sender As TextBox, ByVal e As System.Windows.Forms.KeyEventArgs) Handles txtButton4.KeyDown, txtButton5.KeyDown
@@ -287,6 +302,10 @@ Public Class frmOptions
   End Sub
 
   Private Sub txtExtra_LostFocus(ByVal sender As TextBox, ByVal e As System.EventArgs) Handles txtButton4.LostFocus, txtButton5.LostFocus
+    If Not IsNothing(kHook) Then
+      kHook.BlockWin = False
+      kHook = Nothing
+    End If
     If Not IsNothing(sender.Tag) And sender.Text = vbNullString Then
       sender.Text = sender.Tag
       sender.Tag = Nothing
@@ -309,6 +328,10 @@ Public Class frmOptions
   Private Sub cmdClearExtra1_DoubleClick(sender As Object, e As System.EventArgs) Handles cmdClearExtra1.Click
     txtButton4.Text = "Disabled"
     txtButton4.Tag = "Disabled"
+  End Sub
+
+  Private Sub kHook_Keyboard_Press(sender As Object, ByRef e As KeyEventArgs) Handles kHook.Keyboard_Press
+    txtExtra_KeyDown(Me.ActiveControl, e)
   End Sub
 
   Private Sub txtButton5_TextChanged(ByVal sender As Object, ByVal e As System.EventArgs) Handles txtButton5.TextChanged
