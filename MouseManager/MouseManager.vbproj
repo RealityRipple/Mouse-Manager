@@ -125,6 +125,7 @@
     <Compile Include="ApplicationEvents.vb" />
     <Compile Include="Classes\clsAuthenticode.vb" />
     <Compile Include="Classes\clsKeyboardHook.vb" />
+    <Compile Include="Classes\clsNativeMethods.vb" />
     <Compile Include="Classes\clsOSSupport.vb" />
     <Compile Include="clsLinkLabel.vb">
       <SubType>Component</SubType>
