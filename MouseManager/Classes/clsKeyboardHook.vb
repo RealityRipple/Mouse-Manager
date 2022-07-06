@@ -54,8 +54,9 @@ Public Class KeyboardHook
     If (nCode = HC_ACTION) Then
       If Block Then
         If (wParam = WM_KEYDOWN) Then
-          RaiseEvent Keyboard_Press(Me, New KeyEventArgs(lParam.vkCode))
-          Return 1
+          Dim xb As New KeyEventArgs(lParam.vkCode)
+          RaiseEvent Keyboard_Press(Me, xb)
+          If xb.Handled Then Return 1
         End If
         If (wParam = WM_KEYUP) Then Return 1
       End If
