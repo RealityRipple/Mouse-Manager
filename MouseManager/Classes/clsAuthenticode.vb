@@ -5,9 +5,12 @@ Public Class Authenticode
   <DllImport("wintrust", PreserveSig:=True, SetLastError:=True)>
   Private Shared Function WinVerifyTrust(hWnd As IntPtr, pgActionID As IntPtr, pWinTrustData As IntPtr) As UInt32
   End Function
-  Private Const RRThumb As String = "25E10B83C6F3EA44EE5E8C290EB17200A5F77EBB"
-  Private Const RRSerial As String = "0087448327"
-  Private Const RRSubject As String = "CN=RealityRipple Software Root CA, OU=RealityRipple Software Certificate Authority, O=RealityRipple Software, L=Los Berros Canyon, S=California, C=US"
+  Private Const RRRootThumb As String = "25E10B83C6F3EA44EE5E8C290EB17200A5F77EBB"
+  Private Const RRRootSerial As String = "0087448327"
+  Private Const RRRootSubject As String = "CN=RealityRipple Software Root CA, OU=RealityRipple Software Certificate Authority, O=RealityRipple Software, L=Los Berros Canyon, S=California, C=US"
+  Private Const RRSignThumb As String = "F526764D46CB25CB11C914B09660AD7E911BFBDA"
+  Private Const RRSignSerial As String = "32126882"
+  Private Const RRSignSubject As String = "CN=RealityRipple Software, OU=Software Development, O=RealityRipple Software, L=Los Berros Canyon, S=California, C=US"
   Private Structure WINTRUST_FILE_INFO
     Implements IDisposable
     Public cbStruct As UInt32
@@ -199,11 +202,30 @@ Public Class Authenticode
     theCertificateChain.ChainPolicy.VerificationFlags = X509VerificationFlags.NoFlag
     theCertificateChain.Build(theCertificate)
     Dim Root As X509Certificate2 = theCertificateChain.ChainElements(theCertificateChain.ChainElements.Count - 1).Certificate
-    If Root.Thumbprint = RRThumb And Root.SerialNumber = RRSerial And Root.Subject = RRSubject Then Return True
+    If Root.Thumbprint = RRRootThumb And Root.SerialNumber = RRRootSerial And Root.Subject = RRRootSubject Then Return True
+    Return False
+  End Function
+  Private Shared Function SignerIsRealityRipple(sFile As String) As Boolean
+    Dim theCertificate As X509Certificate2
+    Try
+      Dim theSigner As X509Certificate = X509Certificate.CreateFromSignedFile(sFile)
+      theCertificate = New X509Certificate2(theSigner)
+    Catch ex As Exception
+      Return False
+    End Try
+    Dim theCertificateChain = New X509Chain(True)
+    theCertificateChain.ChainPolicy.RevocationFlag = X509RevocationFlag.EntireChain
+    theCertificateChain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck
+    theCertificateChain.ChainPolicy.UrlRetrievalTimeout = New TimeSpan(0, 0, 15)
+    theCertificateChain.ChainPolicy.VerificationFlags = X509VerificationFlags.NoFlag
+    theCertificateChain.Build(theCertificate)
+    Dim Signer As X509Certificate2 = theCertificateChain.ChainElements(0).Certificate
+    If Signer.Thumbprint = RRSignThumb And Signer.SerialNumber = RRSignSerial And Signer.Subject = RRSignSubject Then Return True
     Return False
   End Function
   Public Shared Function IsSelfSigned(sFile As String) As Boolean
     If Not RootIsRealityRipple(sFile) Then Return False
+    If Not SignerIsRealityRipple(sFile) Then Return False
     Dim iRet As Validity = VerifyTrust(sFile)
     Select Case iRet
       Case Validity.SignedAndValid : Return True
