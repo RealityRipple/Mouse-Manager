@@ -34,7 +34,7 @@ Public Class KeyboardHook
 
   Private Block As Boolean = False
 
-  Public Event Keyboard_Press(sender As Object, ByRef e As KeyEventArgs)
+  Public Event Keyboard_Press(ByVal sender As Object, ByVal e As KeyEventArgs)
 
   Public Sub New()
     KeyboardHookDelegate = New KeyboardProcDelegate(AddressOf KeyboardProc)

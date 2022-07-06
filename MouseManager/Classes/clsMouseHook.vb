@@ -38,9 +38,9 @@ Public Class MouseHook
       Handled = False
     End Sub
   End Class
-  Public Event Mouse_XButton_Down(sender As Object, ByRef e As XButtonEventArgs)
-  Public Event Mouse_XButton_Up(sender As Object, ByRef e As XButtonEventArgs)
-  Public Event Mouse_XButton_DoubleClick(sender As Object, ByRef e As XButtonEventArgs)
+  Public Event Mouse_XButton_Down(ByVal sender As Object, ByVal e As XButtonEventArgs)
+  Public Event Mouse_XButton_Up(ByVal sender As Object, ByVal e As XButtonEventArgs)
+  Public Event Mouse_XButton_DoubleClick(ByVal sender As Object, ByVal e As XButtonEventArgs)
 
   Public Sub New()
     MouseHookDelegate = New MouseProcDelegate(AddressOf MouseProc)
