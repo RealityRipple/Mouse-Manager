@@ -1,4 +1,5 @@
 ﻿Imports System.Runtime.InteropServices
+
 Public Class KeyboardHook
   <DllImport("user32", CharSet:=CharSet.Auto, CallingConvention:=CallingConvention.StdCall)>
   Private Shared Function SetWindowsHookEx(ByVal idHook As Integer, ByVal lpfn As KeyboardProcDelegate, ByVal hmod As Integer, ByVal dwThreadId As Integer) As Integer
@@ -23,17 +24,13 @@ Public Class KeyboardHook
     LLKHF_ALTDOWN = &H20
     LLKHF_UP = &H80
   End Enum
-
   Private Const HC_ACTION As Integer = 0
   Private Const WH_KEYBOARD_LL As Integer = 13
   Private Const WM_KEYDOWN As Integer = &H100
   Private Const WM_KEYUP As Integer = &H101
-
   Private KeyboardHook As Integer
   Private KeyboardHookDelegate As KeyboardProcDelegate
-
   Private Block As Boolean = False
-
   Public Event Keyboard_Press(ByVal sender As Object, ByVal e As KeyEventArgs)
 
   Public Sub New()
@@ -69,4 +66,3 @@ Public Class KeyboardHook
     MyBase.Finalize()
   End Sub
 End Class
-

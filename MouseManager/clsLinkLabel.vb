@@ -1,8 +1,15 @@
 ﻿Imports System.ComponentModel
 Imports System.Runtime.InteropServices
+
 <DefaultEvent("LinkClicked"), DefaultProperty("LabelColor")>
 Public Class LinkLabel
   Inherits System.Windows.Forms.Label
+  <DllImport("user32.dll")>
+  Private Shared Function LoadCursor(hInstance As IntPtr, lpCursorName As Integer) As Integer
+  End Function
+  <DllImport("user32.dll")>
+  Private Shared Function SetCursor(hCursor As Integer) As Integer
+  End Function
   Private c_Hovering As Boolean
   Private c_Link As Boolean
   Private c_Visited As Boolean
@@ -13,12 +20,7 @@ Public Class LinkLabel
   Private c_LinkActiveColor As Color
   Private c_LinkVisitedColor As Color
   Public Event LinkClicked(sender As Object, e As LinkLabelLinkClickedEventArgs)
-  <DllImport("user32.dll")>
-  Private Shared Function LoadCursor(hInstance As IntPtr, lpCursorName As Integer) As Integer
-  End Function
-  <DllImport("user32.dll")>
-  Private Shared Function SetCursor(hCursor As Integer) As Integer
-  End Function
+
   <DefaultValue(True)>
   Public Property Link As Boolean
     Get
@@ -29,6 +31,7 @@ Public Class LinkLabel
       RedrawLabel()
     End Set
   End Property
+
   <DefaultValue(False)>
   Public Property Visited As Boolean
     Get
@@ -39,6 +42,7 @@ Public Class LinkLabel
       RedrawLabel()
     End Set
   End Property
+
   <Browsable(False), EditorBrowsable(False)>
   Public Overrides Property ForeColor As System.Drawing.Color
     Get
@@ -48,6 +52,7 @@ Public Class LinkLabel
       MyBase.ForeColor = value
     End Set
   End Property
+
   <DefaultValue(GetType(System.Drawing.Color), "ControlText")>
   Public Property LabelColor As Color
     Get
@@ -58,6 +63,7 @@ Public Class LinkLabel
       RedrawLabel()
     End Set
   End Property
+
   <DefaultValue(GetType(System.Drawing.Color), "MediumBlue")>
   Public Property LinkColor As Color
     Get
@@ -68,6 +74,7 @@ Public Class LinkLabel
       RedrawLabel()
     End Set
   End Property
+
   <DefaultValue(LinkBehavior.SystemDefault)>
   Public Property LinkHoverBehavior As LinkBehavior
     Get
@@ -78,6 +85,7 @@ Public Class LinkLabel
       RedrawLabel()
     End Set
   End Property
+
   <DefaultValue(GetType(System.Drawing.Color), "Blue")>
   Public Property LinkHoverColor As Color
     Get
@@ -88,6 +96,7 @@ Public Class LinkLabel
       RedrawLabel()
     End Set
   End Property
+
   <DefaultValue(GetType(System.Drawing.Color), "Red")>
   Public Property LinkActiveColor As Color
     Get
@@ -98,6 +107,7 @@ Public Class LinkLabel
       RedrawLabel()
     End Set
   End Property
+
   <DefaultValue(GetType(System.Drawing.Color), "Purple")>
   Public Property LinkVisitedColor As Color
     Get
@@ -108,12 +118,14 @@ Public Class LinkLabel
       RedrawLabel()
     End Set
   End Property
+
   <DefaultValue(False), Browsable(False)>
   Public ReadOnly Property Hovering As Boolean
     Get
       Return c_Hovering
     End Get
   End Property
+
   Public Sub New()
     MyBase.New()
     c_Hovering = False
@@ -127,6 +139,7 @@ Public Class LinkLabel
     c_Visited = False
     RedrawLabel()
   End Sub
+
   Protected Overrides Sub OnMouseEnter(ByVal e As EventArgs)
     If c_Link Then
       c_Hovering = True
@@ -134,6 +147,7 @@ Public Class LinkLabel
     End If
     MyBase.OnMouseEnter(e)
   End Sub
+
   Protected Overrides Sub OnMouseLeave(ByVal e As EventArgs)
     If c_Link Then
       c_Hovering = False
@@ -141,12 +155,14 @@ Public Class LinkLabel
     End If
     MyBase.OnMouseLeave(e)
   End Sub
+
   Protected Overrides Sub OnMouseDown(ByVal e As System.Windows.Forms.MouseEventArgs)
     If e.Button = Windows.Forms.MouseButtons.Left And c_Link Then
       MyBase.ForeColor = c_LinkActiveColor
     End If
     MyBase.OnMouseDown(e)
   End Sub
+
   Protected Overrides Sub OnMouseClick(ByVal e As System.Windows.Forms.MouseEventArgs)
     If e.Button = Windows.Forms.MouseButtons.Left And c_Link Then
       c_Visited = True
@@ -154,12 +170,14 @@ Public Class LinkLabel
     End If
     MyBase.OnMouseClick(e)
   End Sub
+
   Protected Overrides Sub OnMouseUp(ByVal e As System.Windows.Forms.MouseEventArgs)
     If e.Button = Windows.Forms.MouseButtons.Left And c_Link Then
       RedrawLabel()
     End If
     MyBase.OnMouseUp(e)
   End Sub
+
   Public Overrides Property Font As System.Drawing.Font
     Get
       Return MyBase.Font
@@ -169,6 +187,7 @@ Public Class LinkLabel
       RedrawLabel()
     End Set
   End Property
+
   Private Sub RedrawLabel()
     If c_Link Then
       If c_Hovering Then
@@ -223,6 +242,7 @@ Public Class LinkLabel
       MyBase.Cursor = Cursors.Default
     End If
   End Sub
+
   Protected Overrides Sub WndProc(ByRef msg As System.Windows.Forms.Message)
     If msg.Msg = 32 Then
       If MyBase.Cursor = Cursors.Hand Then

@@ -18,6 +18,7 @@ Public Class Authenticode
     Public pcwszFilePath As String
     Public hFile As IntPtr
     Public pgKnownSubject As IntPtr
+
     Public Sub New(ByVal sFile As String, ByVal gSubject As Guid)
       cbStruct = Marshal.SizeOf(GetType(WINTRUST_FILE_INFO))
       pcwszFilePath = sFile
@@ -29,6 +30,7 @@ Public Class Authenticode
       End If
       hFile = IntPtr.Zero
     End Sub
+
     Public Sub Dispose() Implements System.IDisposable.Dispose
       If Not pgKnownSubject = IntPtr.Zero Then
         Marshal.DestroyStructure(pgKnownSubject, GetType(Guid))
@@ -51,6 +53,7 @@ Public Class Authenticode
     Private pwszURLReference As IntPtr
     Public dwProvFlags As TrustProviderFlags
     Public dwUIContext As UIContext
+
     Public Sub New(ByVal FileInfo As WINTRUST_FILE_INFO)
       cbStruct = Marshal.SizeOf(GetType(WINTRUST_DATA))
       pInfoStruct = Marshal.AllocHGlobal(Marshal.SizeOf(GetType(WINTRUST_FILE_INFO)))
@@ -66,6 +69,7 @@ Public Class Authenticode
       dwProvFlags = TrustProviderFlags.Safer
       dwUIContext = UIContext.Execute
     End Sub
+
     Public Sub Dispose() Implements System.IDisposable.Dispose
       If dwUnionChoice = UnionChoice.File Then
         Dim info As New WINTRUST_FILE_INFO
@@ -76,21 +80,26 @@ Public Class Authenticode
       Marshal.FreeHGlobal(pInfoStruct)
     End Sub
   End Structure
+
   Private Class UnmanagedPointer
     Implements IDisposable
     Private m_ptr As IntPtr
     Private m_meth As AllocMethod
+
     Public Sub New(ByVal ptr As IntPtr, ByVal method As AllocMethod)
       m_meth = method
       m_ptr = ptr
     End Sub
+
     Public ReadOnly Property Pointer() As IntPtr
       Get
         Return m_ptr
       End Get
     End Property
+
 #Region "IDisposable Support"
     Private disposedValue As Boolean
+
     Protected Overridable Sub Dispose(disposing As Boolean)
       If Not Me.disposedValue Then
         If Not m_ptr = IntPtr.Zero Then
@@ -107,19 +116,23 @@ Public Class Authenticode
       End If
       Me.disposedValue = True
     End Sub
+
     Protected Overrides Sub Finalize()
       Dispose(False)
       MyBase.Finalize()
     End Sub
+
     Public Sub Dispose() Implements IDisposable.Dispose
       Dispose(True)
     End Sub
 #End Region
   End Class
+
   Private Enum AllocMethod
     HGlobal
     CoTaskMem
   End Enum
+
   Private Enum UnionChoice
     File = 1
     Catalog
@@ -127,16 +140,19 @@ Public Class Authenticode
     Signer
     Cert
   End Enum
+
   Private Enum UiChoice
     All = 1
     NoUI
     NoBad
     NoGood
   End Enum
+
   Private Enum RevocationCheckFlags
     None = 0
     WholeChain
   End Enum
+
   Private Enum StateAction
     Ignore = 0
     Verify
@@ -144,6 +160,7 @@ Public Class Authenticode
     AutoCache
     AutoCacheFlush
   End Enum
+
   <Flags()>
   Private Enum TrustProviderFlags
     UseIE4Trust = 1
@@ -158,10 +175,12 @@ Public Class Authenticode
     UseDefaultOSVerCheck = 1024
     LifetimeSigning = 2048
   End Enum
+
   Private Enum UIContext
     Execute = 0
     Install
   End Enum
+
   Private Enum Validity As UInteger
     Unsigned = &H800B0100UI
     SignedButBad = &H80096010UI
@@ -169,6 +188,7 @@ Public Class Authenticode
     SignedButUntrusted = &H800B0109UI
     SignedAndValid = 0
   End Enum
+
   Private Shared Function VerifyTrust(ByVal sFile As String) As UInteger
     Dim v2ID As New Guid("{00AAC56B-CD44-11d0-8CC2-00C04FC295EE}")
     Dim result As UInteger = Validity.Unsigned
@@ -187,6 +207,7 @@ Public Class Authenticode
     fileInfo = Nothing
     Return result
   End Function
+
   Private Shared Function RootIsRealityRipple(ByVal sFile As String) As Boolean
     Dim theCertificate As X509Certificate2
     Try
@@ -205,6 +226,7 @@ Public Class Authenticode
     If Root.Thumbprint = RRRootThumb And Root.SerialNumber = RRRootSerial And Root.Subject = RRRootSubject Then Return True
     Return False
   End Function
+
   Private Shared Function SignerIsRealityRipple(ByVal sFile As String) As Boolean
     Dim theCertificate As X509Certificate2
     Try
@@ -223,6 +245,7 @@ Public Class Authenticode
     If Signer.Thumbprint = RRSignThumb And Signer.SerialNumber = RRSignSerial And Signer.Subject = RRSignSubject Then Return True
     Return False
   End Function
+
   Public Shared Function IsSelfSigned(ByVal sFile As String) As Boolean
     If Not RootIsRealityRipple(sFile) Then Return False
     If Not SignerIsRealityRipple(sFile) Then Return False
