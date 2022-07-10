@@ -1,13 +1,13 @@
 # ![](https://realityripple.com/Software/Applications/Mouse-Manager/favicon-32x32.png) Mouse Manager
 Map keyboard commands to fourth and fifth buttons on a 4-button, 5-button, or Tilt-wheel mouse.
 
-#### Version 2.1
+#### Version 2.2
 > Author: Andrew Sachen  
 > Created: June 21, 2010  
-> Updated: January 8, 2022  
+> Updated: July 9, 2022  
 
 Language: Visual Basic.NET  
-Compiler: Visual Studio 2019  
+Compiler: Visual Studio 2010  
 Framework: Version 4.0+
 
 ## Building
