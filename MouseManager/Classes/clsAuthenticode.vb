@@ -181,15 +181,21 @@ Public Class Authenticode
     Install
   End Enum
 
-  Private Enum Validity As UInteger
+  Public Enum Validity As UInteger
     Unsigned = &H800B0100UI
     SignedButBad = &H80096010UI
     SignedButInvalid = &H800B0000UI
     SignedButUntrusted = &H800B0109UI
     SignedAndValid = 0
+    BadThumb = &HA0090001UI
+    BadSerial = &HA0090002UI
+    BadSubject = &HA0090003UI
+    BadRootThumb = &HA0090101UI
+    BadRootSerial = &HA0090102UI
+    BadRootSubject = &HA0090103UI
   End Enum
 
-  Private Shared Function VerifyTrust(ByVal sFile As String) As UInteger
+  Private Shared Function VerifyTrust(ByVal sFile As String) As Validity
     Dim v2ID As New Guid("{00AAC56B-CD44-11d0-8CC2-00C04FC295EE}")
     Dim result As UInteger = Validity.Unsigned
     Dim fileInfo As New WINTRUST_FILE_INFO(sFile, Guid.Empty)
@@ -208,7 +214,7 @@ Public Class Authenticode
     Return result
   End Function
 
-  Private Shared Function RootIsRealityRipple(ByVal sFile As String) As Boolean
+  Private Shared Function RootIsRealityRipple(ByVal sFile As String) As Validity
     Dim theCertificate As X509Certificate2
     Try
       Dim theSigner As X509Certificate = X509Certificate.CreateFromSignedFile(sFile)
@@ -223,11 +229,13 @@ Public Class Authenticode
     theCertificateChain.ChainPolicy.VerificationFlags = X509VerificationFlags.NoFlag
     theCertificateChain.Build(theCertificate)
     Dim Root As X509Certificate2 = theCertificateChain.ChainElements(theCertificateChain.ChainElements.Count - 1).Certificate
-    If Root.Thumbprint = RRRootThumb And Root.SerialNumber = RRRootSerial And Root.Subject = RRRootSubject Then Return True
-    Return False
+    If Not Root.Thumbprint = RRRootThumb Then Return Validity.BadRootThumb
+    If Not Root.SerialNumber = RRRootSerial Then Return Validity.BadRootSerial
+    If Not Root.Subject = RRRootSubject Then Return Validity.BadRootSubject
+    Return 0
   End Function
 
-  Private Shared Function SignerIsRealityRipple(ByVal sFile As String) As Boolean
+  Private Shared Function SignerIsRealityRipple(ByVal sFile As String) As Validity
     Dim theCertificate As X509Certificate2
     Try
       Dim theSigner As X509Certificate = X509Certificate.CreateFromSignedFile(sFile)
@@ -242,18 +250,17 @@ Public Class Authenticode
     theCertificateChain.ChainPolicy.VerificationFlags = X509VerificationFlags.NoFlag
     theCertificateChain.Build(theCertificate)
     Dim Signer As X509Certificate2 = theCertificateChain.ChainElements(0).Certificate
-    If Signer.Thumbprint = RRSignThumb And Signer.SerialNumber = RRSignSerial And Signer.Subject = RRSignSubject Then Return True
-    Return False
+    If Not Signer.Thumbprint = RRSignThumb Then Return Validity.BadThumb
+    If Not Signer.SerialNumber = RRSignSerial Then Return Validity.BadSerial
+    If Not Signer.Subject = RRSignSubject Then Return Validity.BadSubject
+    Return 0
   End Function
 
-  Public Shared Function IsSelfSigned(ByVal sFile As String) As Boolean
-    If Not RootIsRealityRipple(sFile) Then Return False
-    If Not SignerIsRealityRipple(sFile) Then Return False
-    Dim iRet As Validity = VerifyTrust(sFile)
-    Select Case iRet
-      Case Validity.SignedAndValid : Return True
-      Case Validity.SignedButUntrusted : Return True
-    End Select
-    Return False
+  Public Shared Function IsSelfSigned(ByVal sFile As String) As Validity
+    Dim iRet As Validity = RootIsRealityRipple(sFile)
+    If Not iRet = Validity.SignedAndValid Then Return iRet
+    iRet = SignerIsRealityRipple(sFile)
+    If Not iRet = Validity.SignedAndValid Then Return iRet
+    Return VerifyTrust(sFile)
   End Function
 End Class

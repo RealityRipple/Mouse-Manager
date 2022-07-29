@@ -1,8 +1,9 @@
 ﻿Namespace My
   Partial Friend Class MyApplication
     Private Sub MyApplication_Startup(sender As Object, e As Microsoft.VisualBasic.ApplicationServices.StartupEventArgs) Handles Me.Startup
-      Dim sEXEPath As String = IO.Path.Combine(My.Application.Info.DirectoryPath, My.Application.Info.AssemblyName & ".exe")
-      If Not Authenticode.IsSelfSigned(sEXEPath) Then
+      Dim v As Authenticode.Validity = Authenticode.IsSelfSigned(Reflection.Assembly.GetExecutingAssembly().Location)
+      If Not (v = Authenticode.Validity.SignedAndValid Or v = Authenticode.Validity.SignedButUntrusted) Then
+        MsgBox("The Executable """ & IO.Path.GetFileName(Reflection.Assembly.GetExecutingAssembly().Location) & """ is not signed and may be corrupted or modified." & vbNewLine & "Error Code: 0x" & Hex(v), MsgBoxStyle.Critical Or MsgBoxStyle.SystemModal, My.Application.Info.ProductName)
         e.Cancel = True
         Return
       End If
