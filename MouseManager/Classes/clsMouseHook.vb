@@ -18,19 +18,22 @@ Public Class MouseHook
     Public time As UInt32
     Public dwExtraInfo As UInt32
   End Structure
+
   Private Const HC_ACTION As Integer = 0
   Private Const WH_MOUSE_LL As Integer = 14
   Private Const WM_XBUTTONDOWN As Integer = &H20B
   Private Const WM_XBUTTONUP As Integer = &H20C
   Private Const WM_XBUTTONDBLCLK As Integer = &H20D
+
   Private MouseHook As Integer
   Private MouseHookDelegate As MouseProcDelegate
+
   Public Class XButtonEventArgs
     Inherits EventArgs
     Public Button As UInt32
     Public Location As Point
     Public Handled As Boolean
-    Public Sub New(button As UInt32, location As Point)
+    Public Sub New(ByVal button As UInt32, ByVal location As Point)
       Me.Button = button
       Me.Location = location
       Handled = False

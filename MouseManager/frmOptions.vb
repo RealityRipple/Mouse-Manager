@@ -1,7 +1,10 @@
 ﻿Public Class frmOptions
   Private WithEvents mHook As MouseHook = Nothing
   Private WithEvents kHook As KeyboardHook = Nothing
-  Private tDetection As Threading.Timer
+  Private tDetect As Threading.Timer
+  Private Const iDetection As Integer = 250
+  Private tPress As Threading.Timer
+  Private tRelease As Threading.Timer
   Private selButton4Action As New List(Of Keys)
   Private selButton5Action As New List(Of Keys)
   Private Mouse4State As MSTATE = MSTATE.Null
@@ -63,7 +66,10 @@
         myRegKey.DeleteValue("Enabled")
       End If
       chkEnable.Checked = (myRegKey.GetValue("", 0) = 1)
-      If chkEnable.Checked And mHook Is Nothing Then mHook = New MouseHook()
+      If chkEnable.Checked Then
+        If mHook Is Nothing Then mHook = New MouseHook()
+        If tDetect Is Nothing Then tDetect = New Threading.Timer(New Threading.TimerCallback(AddressOf tDetect_Tick), Nothing, 0, iDetection)
+      End If
     End If
     cmdSave.Enabled = False
     If doInit Then
@@ -90,18 +96,28 @@
       If noTray Then trayIcon.Visible = True
     Else
       If noTray Then trayIcon.Visible = False
-      If chkEnable.Checked AndAlso mHook Is Nothing Then mHook = New MouseHook()
+      If chkEnable.Checked Then
+        If mHook Is Nothing Then mHook = New MouseHook()
+        If tDetect Is Nothing Then tDetect = New Threading.Timer(New Threading.TimerCallback(AddressOf tDetect_Tick), Nothing, 0, iDetection)
+      End If
     End If
   End Sub
 
   Private Sub frmOptions_Deactivate(ByVal sender As Object, ByVal e As EventArgs) Handles Me.Deactivate
-    If chkEnable.Checked AndAlso mHook Is Nothing Then mHook = New MouseHook()
+    If chkEnable.Checked Then
+      If mHook Is Nothing Then mHook = New MouseHook()
+      If tDetect Is Nothing Then tDetect = New Threading.Timer(New Threading.TimerCallback(AddressOf tDetect_Tick), Nothing, 0, iDetection)
+    End If
     If Not IsNothing(kHook) Then kHook.BlockWin = False
   End Sub
 
   Private Sub frmOptions_Activated(ByVal sender As Object, ByVal e As EventArgs) Handles Me.Activated
     If Me.Visible Then
       If mHook IsNot Nothing Then mHook = Nothing
+      If tDetect IsNot Nothing Then
+        tDetect.Dispose()
+        tDetect = Nothing
+      End If
     End If
     If Not IsNothing(kHook) AndAlso (Me.ActiveControl.Name = txtButton4.Name Or Me.ActiveControl.Name = txtButton5.Name) Then kHook.BlockWin = True
   End Sub
@@ -398,109 +414,80 @@
       new5Action = StrToKeys(prof.Button5)
       Exit For
     Next
-    If new4Action Is Nothing Or new5Action Is Nothing Then
-      ClearKeyHold()
+    If new4Action Is Nothing Then
+      selButton4Action = Nothing
     Else
       selButton4Action = new4Action
+    End If
+    If new5Action Is Nothing Then
+      selButton5Action = Nothing
+    Else
       selButton5Action = new5Action
     End If
   End Sub
 
-  Private Sub KeyHold()
-    If tDetection IsNot Nothing Then
-      tDetection.Dispose()
-      tDetection = Nothing
-    End If
-    tDetection_Tick(Nothing)
-    tDetection = New Threading.Timer(New Threading.TimerCallback(AddressOf tDetection_Tick), Nothing, KeyboardDelay, KeyboardRepeat)
-  End Sub
-
-  Private Sub ClearKeyHold()
-    If Not Mouse4State = MSTATE.Null Then Return
-    If Not Mouse5State = MSTATE.Null Then Return
-    If tDetection IsNot Nothing Then
-      tDetection.Dispose()
-      tDetection = Nothing
-    End If
-    selButton4Action = Nothing
-    selButton5Action = Nothing
-  End Sub
-
   Private Sub mHook_Mouse_XButton_Down(ByVal sender As Object, ByVal e As MouseHook.XButtonEventArgs) Handles mHook.Mouse_XButton_Down
-    selButton4Action = Nothing
-    selButton5Action = Nothing
-    ProcessProfile()
     Select Case e.Button
       Case &H10000
-        If selButton4Action Is Nothing Then
-          Mouse4State = MSTATE.Null
-          Return
-        End If
         Mouse4State = MSTATE.Down
       Case &H20000
-        If selButton5Action Is Nothing Then
-          Mouse5State = MSTATE.Null
-          Return
-        End If
         Mouse5State = MSTATE.Down
       Case Else
         Return
     End Select
-    KeyHold()
+    If tPress IsNot Nothing Then
+      tPress.Dispose()
+      tPress = Nothing
+    End If
+    tPress = New Threading.Timer(New Threading.TimerCallback(AddressOf tPress_Tick), False, 0, -1)
     e.Handled = True
   End Sub
 
   Private Sub mHook_Mouse_XButton_Up(ByVal sender As Object, ByVal e As MouseHook.XButtonEventArgs) Handles mHook.Mouse_XButton_Up
+    If selButton4Action Is Nothing And selButton5Action Is Nothing Then Return
     Select Case e.Button
       Case &H10000
         If Not (Mouse4State = MSTATE.Down Or Mouse4State = MSTATE.Press) Then Return
-        If selButton4Action Is Nothing Then
-          Mouse4State = MSTATE.Null
-          Return
-        End If
         Mouse4State = MSTATE.Up
       Case &H20000
         If Not (Mouse5State = MSTATE.Down Or Mouse5State = MSTATE.Press) Then Return
-        If selButton5Action Is Nothing Then
-          Mouse5State = MSTATE.Null
-          Return
-        End If
         Mouse5State = MSTATE.Up
       Case Else
         Return
     End Select
+    If tRelease IsNot Nothing Then
+      tRelease.Dispose()
+      tRelease = Nothing
+    End If
+    tRelease = New Threading.Timer(New Threading.TimerCallback(AddressOf tRelease_Tick), Nothing, 0, -1)
     e.Handled = True
   End Sub
 
-  Private Sub tDetection_Tick(ByVal state As Object)
-    If Mouse4State = MSTATE.Null And Mouse5State = MSTATE.Null Then Return
-    Dim hasActivity As Boolean = False
-    If Not Mouse4State = MSTATE.Null And selButton4Action IsNot Nothing Then hasActivity = True
-    If Not Mouse5State = MSTATE.Null And selButton5Action IsNot Nothing Then hasActivity = True
-    If Not hasActivity Then Return
+  Private Sub tDetect_Tick(ByVal state As Object)
     ProcessProfile()
+  End Sub
+
+  Private Sub tPress_Tick(ByVal state As Object)
+    If tPress Is Nothing Then Return
     Dim downAction As New List(Of Keys)
     Dim pressAction As New List(Of Keys)
-    Dim upAction As New List(Of Keys)
-    If Mouse4State = MSTATE.Up Then
-      Mouse4State = MSTATE.Null
-      upAction.AddRange(selButton4Action)
-    ElseIf Mouse4State = MSTATE.Down Then
-      Mouse4State = MSTATE.Press
-      downAction.AddRange(selButton4Action)
-    ElseIf Mouse4State = MSTATE.Press Then
-      pressAction.AddRange(selButton4Action)
+    If selButton4Action IsNot Nothing Then
+      If Mouse4State = MSTATE.Down Then
+        Mouse4State = MSTATE.Press
+        downAction.AddRange(selButton4Action)
+      ElseIf Mouse4State = MSTATE.Press Then
+        pressAction.AddRange(selButton4Action)
+      End If
     End If
-    If Mouse5State = MSTATE.Up Then
-      Mouse5State = MSTATE.Null
-      upAction.AddRange(selButton5Action)
-    ElseIf Mouse5State = MSTATE.Down Then
-      Mouse5State = MSTATE.Press
-      downAction.AddRange(selButton5Action)
-    ElseIf Mouse5State = MSTATE.Press Then
-      pressAction.AddRange(selButton5Action)
+    If selButton5Action IsNot Nothing Then
+      If Mouse5State = MSTATE.Down Then
+        Mouse5State = MSTATE.Press
+        downAction.AddRange(selButton5Action)
+      ElseIf Mouse5State = MSTATE.Press Then
+        pressAction.AddRange(selButton5Action)
+      End If
     End If
-    ClearKeyHold()
+    If downAction.Count = 0 And pressAction.Count = 0 Then Return
     If downAction.Count > 0 Then
       For Each k As Keys In downAction
         Dim ei As UIntPtr = UIntPtr.Zero
@@ -514,6 +501,30 @@
         NativeMethods.keybd_event(k, NativeMethods.MapVirtualKey(k, 0), NativeMethods.KEYEVENTF_KEYDOWN, ei)
       Next
     End If
+    Dim kTime = KeyboardDelay
+    If state Then kTime = KeyboardRepeat
+    If tPress IsNot Nothing Then
+      tPress.Dispose()
+      tPress = Nothing
+    End If
+    tPress = New Threading.Timer(New Threading.TimerCallback(AddressOf tPress_Tick), True, kTime, -1)
+  End Sub
+
+  Private Sub tRelease_Tick(ByVal state As Object)
+    If tRelease Is Nothing Then Return
+    Dim upAction As New List(Of Keys)
+    If selButton4Action IsNot Nothing Then
+      If Mouse4State = MSTATE.Up Then
+        Mouse4State = MSTATE.Null
+        upAction.AddRange(selButton4Action)
+      End If
+    End If
+    If selButton5Action IsNot Nothing Then
+      If Mouse5State = MSTATE.Up Then
+        Mouse5State = MSTATE.Null
+        upAction.AddRange(selButton5Action)
+      End If
+    End If
     If upAction.Count > 0 Then
       For Each k As Keys In upAction
         Dim ei As UIntPtr = UIntPtr.Zero
@@ -521,6 +532,7 @@
       Next
     End If
   End Sub
+
 #End Region
 
   Private Sub lblAdvancedWebsite_LinkClicked(ByVal sender As Object, ByVal e As System.Windows.Forms.LinkLabelLinkClickedEventArgs) Handles lblAdvancedWebsite.LinkClicked
@@ -627,7 +639,12 @@
     If sender.Text = "No Profile" Then
       chkEnable.Checked = sender.Checked
       chkEnable_CheckedChanged(sender, e)
+      cmdSave_Click(sender, e)
       If mHook IsNot Nothing Then mHook = Nothing
+      If tDetect IsNot Nothing Then
+        tDetect.Dispose()
+        tDetect = Nothing
+      End If
     Else
       Dim xItem As ListViewItem = sender.Tag
       For Each mnuItem As MenuItem In (From mnuTmp In mnuProfiles.MenuItems Where mnuTmp.GetType.ToString = "MenuItem" Select mnuTmp)
@@ -638,9 +655,10 @@
       Dim wasChecked As Boolean = xItem.Checked
       xItem.Checked = True
       lvProfiles_ItemCheck(sender, New ItemCheckEventArgs(xItem.Index, IIf(sender.Checked, CheckState.Checked, CheckState.Unchecked), IIf(wasChecked, CheckState.Checked, CheckState.Unchecked)))
+      cmdSave_Click(sender, e)
       If mHook Is Nothing Then mHook = New MouseHook()
+      If tDetect Is Nothing Then tDetect = New Threading.Timer(New Threading.TimerCallback(AddressOf tDetect_Tick), Nothing, 0, iDetection)
     End If
-    cmdSave_Click(sender, e)
   End Sub
 
   Private Sub trayIcon_MouseUp(ByVal sender As Object, ByVal e As MouseEventArgs) Handles trayIcon.MouseUp
