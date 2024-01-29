@@ -3,9 +3,12 @@
     Private Sub MyApplication_Startup(sender As Object, e As Microsoft.VisualBasic.ApplicationServices.StartupEventArgs) Handles Me.Startup
       Dim v As Authenticode.Validity = Authenticode.IsSelfSigned(Reflection.Assembly.GetExecutingAssembly().Location)
       If Not (v = Authenticode.Validity.SignedAndValid Or v = Authenticode.Validity.SignedButUntrusted) Then
-        MsgBox("The Executable """ & IO.Path.GetFileName(Reflection.Assembly.GetExecutingAssembly().Location) & """ is not signed and may be corrupted or modified." & vbNewLine & "Error Code: 0x" & Hex(v), MsgBoxStyle.Critical Or MsgBoxStyle.SystemModal, My.Application.Info.ProductName)
-        e.Cancel = True
-        Return
+        Dim sErr As String = "0x" & v.ToString("x")
+        If Not CStr(v) = v.ToString Then sErr = v.ToString & " (0x" & v.ToString("x") & ")"
+        If MsgBox("The Executable """ & IO.Path.GetFileName(Reflection.Assembly.GetExecutingAssembly().Location) & """ is not signed and may be corrupted or modified." & vbNewLine & "Error Code: " & sErr & vbNewLine & vbNewLine & "Would you like to continue loading " & My.Application.Info.ProductName & " anyway?", MsgBoxStyle.Critical Or MsgBoxStyle.SystemModal Or MsgBoxStyle.YesNo, My.Application.Info.ProductName) = MsgBoxResult.No Then
+          e.Cancel = True
+          Return
+        End If
       End If
       If e.CommandLine.Contains("/uninstall") Then
         If My.Computer.Registry.CurrentUser.OpenSubKey("Software").GetSubKeyNames.Contains(My.Application.Info.CompanyName) Then
