@@ -5,11 +5,11 @@ Public Class Authenticode
   <DllImport("wintrust", PreserveSig:=True, SetLastError:=True)>
   Private Shared Function WinVerifyTrust(ByVal hWnd As IntPtr, ByVal pgActionID As IntPtr, ByVal pWinTrustData As IntPtr) As UInt32
   End Function
-  Private Const RRRootThumb As String = "25E10B83C6F3EA44EE5E8C290EB17200A5F77EBB"
-  Private Const RRRootSerial As String = "0087448327"
-  Private Const RRRootSubject As String = "CN=RealityRipple Software Root CA, OU=RealityRipple Software Certificate Authority, O=RealityRipple Software, L=Los Berros Canyon, S=California, C=US"
-  Private Const RRSignThumb As String = "F526764D46CB25CB11C914B09660AD7E911BFBDA"
-  Private Const RRSignSerial As String = "32126882"
+  Private Const RRRootThumb As String = "901DEBD92572D0A15821312980981E91E754F276"
+  Private Const RRRootSerial As String = "1D8AB7EB"
+  Private Const RRRootSubject As String = "CN=RealityRipple Root CA (Legacy), OU=RealityRipple Certificate Authority, O=RealityRipple Software, L=Los Berros Canyon, S=California, C=US"
+  Private Const RRSignThumb As String = "4A6495CD107A2BA72CF54E15E5E7D87BFC43D911"
+  Private Const RRSignSerial As String = "673C039A"
   Private Const RRSignSubject As String = "CN=RealityRipple Software, OU=Software Development, O=RealityRipple Software, L=Los Berros Canyon, S=California, C=US"
   Private Structure WINTRUST_FILE_INFO
     Implements IDisposable
