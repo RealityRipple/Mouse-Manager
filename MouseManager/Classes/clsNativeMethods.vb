@@ -1,5 +1,4 @@
 ﻿Imports System.Runtime.InteropServices
-
 Public NotInheritable Class NativeMethods
   <DllImport("user32", CharSet:=CharSet.Auto)>
   Public Shared Sub keybd_event(ByVal bVk As Byte, ByVal bScan As Byte, ByVal dwFlags As UInt32, ByVal dwExtraInfo As UIntPtr)

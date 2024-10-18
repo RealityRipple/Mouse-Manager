@@ -1,5 +1,4 @@
 ﻿Imports System.Runtime.InteropServices
-
 Public Class MouseHook
   <DllImport("user32", CharSet:=CharSet.Auto, CallingConvention:=CallingConvention.StdCall)> _
   Private Shared Function SetWindowsHookEx(ByVal idHook As Integer, ByVal lpfn As MouseProcDelegate, ByVal hmod As Integer, ByVal dwThreadId As Integer) As Integer
@@ -18,16 +17,13 @@ Public Class MouseHook
     Public time As UInt32
     Public dwExtraInfo As UInt32
   End Structure
-
   Private Const HC_ACTION As Integer = 0
   Private Const WH_MOUSE_LL As Integer = 14
   Private Const WM_XBUTTONDOWN As Integer = &H20B
   Private Const WM_XBUTTONUP As Integer = &H20C
   Private Const WM_XBUTTONDBLCLK As Integer = &H20D
-
   Private MouseHook As Integer
   Private MouseHookDelegate As MouseProcDelegate
-
   Public Class XButtonEventArgs
     Inherits EventArgs
     Public Button As UInt32
@@ -42,12 +38,10 @@ Public Class MouseHook
   Public Event Mouse_XButton_Down(ByVal sender As Object, ByVal e As XButtonEventArgs)
   Public Event Mouse_XButton_Up(ByVal sender As Object, ByVal e As XButtonEventArgs)
   Public Event Mouse_XButton_DoubleClick(ByVal sender As Object, ByVal e As XButtonEventArgs)
-
   Public Sub New()
     MouseHookDelegate = New MouseProcDelegate(AddressOf MouseProc)
     MouseHook = SetWindowsHookEx(WH_MOUSE_LL, MouseHookDelegate, System.Runtime.InteropServices.Marshal.GetHINSTANCE(System.Reflection.Assembly.GetExecutingAssembly.GetModules()(0)).ToInt32, 0)
   End Sub
-
   Private Function MouseProc(ByVal nCode As Integer, ByVal wParam As Integer, ByRef lParam As MSLLHOOKSTRUCT) As Integer
     If (nCode = HC_ACTION) Then
       Select Case wParam
@@ -67,7 +61,6 @@ Public Class MouseHook
     End If
     Return CallNextHookEx(MouseHook, nCode, wParam, lParam)
   End Function
-
   Protected Overrides Sub Finalize()
     UnhookWindowsHookEx(MouseHook)
     MyBase.Finalize()

@@ -1,5 +1,4 @@
 ﻿Imports System.Runtime.InteropServices
-
 Public Class KeyboardHook
   <DllImport("user32", CharSet:=CharSet.Auto, CallingConvention:=CallingConvention.StdCall)>
   Private Shared Function SetWindowsHookEx(ByVal idHook As Integer, ByVal lpfn As KeyboardProcDelegate, ByVal hmod As Integer, ByVal dwThreadId As Integer) As Integer
@@ -32,12 +31,10 @@ Public Class KeyboardHook
   Private KeyboardHookDelegate As KeyboardProcDelegate
   Private Block As Boolean = False
   Public Event Keyboard_Press(ByVal sender As Object, ByVal e As KeyEventArgs)
-
   Public Sub New()
     KeyboardHookDelegate = New KeyboardProcDelegate(AddressOf KeyboardProc)
     KeyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyboardHookDelegate, System.Runtime.InteropServices.Marshal.GetHINSTANCE(System.Reflection.Assembly.GetExecutingAssembly.GetModules()(0)).ToInt32, 0)
   End Sub
-
   Public Property BlockWin As Boolean
     Get
       Return Block
@@ -46,7 +43,6 @@ Public Class KeyboardHook
       Block = value
     End Set
   End Property
-
   Private Function KeyboardProc(ByVal nCode As Integer, ByVal wParam As Integer, ByRef lParam As KBDLLHOOKSTRUCT) As Integer
     If (nCode = HC_ACTION) Then
       If Block Then
@@ -60,7 +56,6 @@ Public Class KeyboardHook
     End If
     Return CallNextHookEx(KeyboardHook, nCode, wParam, lParam)
   End Function
-
   Protected Overrides Sub Finalize()
     UnhookWindowsHookEx(KeyboardHook)
     MyBase.Finalize()

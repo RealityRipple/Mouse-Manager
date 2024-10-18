@@ -23,7 +23,6 @@
         Return
       End If
     End Sub
-
     Private Sub MyApplication_StartupNextInstance(sender As Object, e As Microsoft.VisualBasic.ApplicationServices.StartupNextInstanceEventArgs) Handles Me.StartupNextInstance
       If e.CommandLine.Contains("/uninstall") Then
         If My.Computer.Registry.CurrentUser.OpenSubKey("Software").GetSubKeyNames.Contains(My.Application.Info.CompanyName) Then
