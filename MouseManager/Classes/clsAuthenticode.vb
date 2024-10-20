@@ -323,7 +323,7 @@ Public Class Authenticode
     Catch ex As Exception
       Return False
     End Try
-    Dim theCertificateChain = New X509Chain(True)
+    Dim theCertificateChain As New X509Chain(True)
     theCertificateChain.ChainPolicy.RevocationFlag = X509RevocationFlag.EntireChain
     theCertificateChain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck
     theCertificateChain.ChainPolicy.UrlRetrievalTimeout = New TimeSpan(0, 0, 0, 15, 500)
@@ -343,7 +343,7 @@ Public Class Authenticode
     Catch ex As Exception
       Return False
     End Try
-    Dim theCertificateChain = New X509Chain(True)
+    Dim theCertificateChain As New X509Chain(True)
     theCertificateChain.ChainPolicy.RevocationFlag = X509RevocationFlag.EntireChain
     theCertificateChain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck
     theCertificateChain.ChainPolicy.UrlRetrievalTimeout = New TimeSpan(0, 0, 0, 15, 500)
