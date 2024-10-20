@@ -1,6 +1,6 @@
 ﻿Namespace My
   Partial Friend Class MyApplication
-    Private Sub MyApplication_Startup(sender As Object, e As Microsoft.VisualBasic.ApplicationServices.StartupEventArgs) Handles Me.Startup
+    Private Sub MyApplication_Startup(ByVal sender As Object, ByVal e As Microsoft.VisualBasic.ApplicationServices.StartupEventArgs) Handles Me.Startup
       Dim v As Authenticode.Validity = Authenticode.IsSelfSigned(Reflection.Assembly.GetExecutingAssembly().Location)
       If Not (v = Authenticode.Validity.SignedAndValid Or v = Authenticode.Validity.SignedButUntrusted) Then
         Dim sErr As String = "0x" & v.ToString("x")
@@ -23,7 +23,7 @@
         Return
       End If
     End Sub
-    Private Sub MyApplication_StartupNextInstance(sender As Object, e As Microsoft.VisualBasic.ApplicationServices.StartupNextInstanceEventArgs) Handles Me.StartupNextInstance
+    Private Sub MyApplication_StartupNextInstance(ByVal sender As Object, ByVal e As Microsoft.VisualBasic.ApplicationServices.StartupNextInstanceEventArgs) Handles Me.StartupNextInstance
       If e.CommandLine.Contains("/uninstall") Then
         If My.Computer.Registry.CurrentUser.OpenSubKey("Software").GetSubKeyNames.Contains(My.Application.Info.CompanyName) Then
           If My.Computer.Registry.CurrentUser.OpenSubKey("Software").OpenSubKey(My.Application.Info.CompanyName).GetSubKeyNames.Contains(My.Application.Info.ProductName) Then

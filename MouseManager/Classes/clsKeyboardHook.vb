@@ -39,7 +39,7 @@ Public Class KeyboardHook
     Get
       Return Block
     End Get
-    Set(value As Boolean)
+    Set(ByVal value As Boolean)
       Block = value
     End Set
   End Property

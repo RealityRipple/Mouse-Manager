@@ -90,7 +90,7 @@ Public Class Authenticode
     End Property
 #Region "IDisposable Support"
     Private disposedValue As Boolean
-    Protected Overridable Sub Dispose(disposing As Boolean)
+    Protected Overridable Sub Dispose(ByVal disposing As Boolean)
       If Not Me.disposedValue Then
         If Not m_ptr = IntPtr.Zero Then
           If m_meth = AllocMethod.HGlobal Then

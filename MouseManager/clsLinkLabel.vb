@@ -4,10 +4,10 @@ Imports System.Runtime.InteropServices
 Public Class LinkLabel
   Inherits System.Windows.Forms.Label
   <DllImport("user32.dll")>
-  Private Shared Function LoadCursor(hInstance As IntPtr, lpCursorName As Integer) As Integer
+  Private Shared Function LoadCursor(ByVal hInstance As IntPtr, ByVal lpCursorName As Integer) As Integer
   End Function
   <DllImport("user32.dll")>
-  Private Shared Function SetCursor(hCursor As Integer) As Integer
+  Private Shared Function SetCursor(ByVal hCursor As Integer) As Integer
   End Function
   Private c_Hovering As Boolean
   Private c_Link As Boolean
@@ -18,13 +18,13 @@ Public Class LinkLabel
   Private c_LinkHoverColor As Color
   Private c_LinkActiveColor As Color
   Private c_LinkVisitedColor As Color
-  Public Event LinkClicked(sender As Object, e As LinkLabelLinkClickedEventArgs)
+  Public Event LinkClicked(ByVal sender As Object, ByVal e As LinkLabelLinkClickedEventArgs)
   <DefaultValue(True)>
   Public Property Link As Boolean
     Get
       Return c_Link
     End Get
-    Set(value As Boolean)
+    Set(ByVal value As Boolean)
       c_Link = value
       RedrawLabel()
     End Set
@@ -34,7 +34,7 @@ Public Class LinkLabel
     Get
       Return c_Visited
     End Get
-    Set(value As Boolean)
+    Set(ByVal value As Boolean)
       c_Visited = value
       RedrawLabel()
     End Set
@@ -44,7 +44,7 @@ Public Class LinkLabel
     Get
       Return MyBase.ForeColor
     End Get
-    Set(value As System.Drawing.Color)
+    Set(ByVal value As System.Drawing.Color)
       MyBase.ForeColor = value
     End Set
   End Property
@@ -53,7 +53,7 @@ Public Class LinkLabel
     Get
       Return c_LabelColor
     End Get
-    Set(value As Color)
+    Set(ByVal value As Color)
       c_LabelColor = value
       RedrawLabel()
     End Set
@@ -63,7 +63,7 @@ Public Class LinkLabel
     Get
       Return c_LinkColor
     End Get
-    Set(value As Color)
+    Set(ByVal value As Color)
       c_LinkColor = value
       RedrawLabel()
     End Set
@@ -73,7 +73,7 @@ Public Class LinkLabel
     Get
       Return c_LinkHover
     End Get
-    Set(value As LinkBehavior)
+    Set(ByVal value As LinkBehavior)
       c_LinkHover = value
       RedrawLabel()
     End Set
@@ -83,7 +83,7 @@ Public Class LinkLabel
     Get
       Return c_LinkHoverColor
     End Get
-    Set(value As Color)
+    Set(ByVal value As Color)
       c_LinkHoverColor = value
       RedrawLabel()
     End Set
@@ -93,7 +93,7 @@ Public Class LinkLabel
     Get
       Return c_LinkActiveColor
     End Get
-    Set(value As Color)
+    Set(ByVal value As Color)
       c_LinkActiveColor = value
       RedrawLabel()
     End Set
@@ -103,7 +103,7 @@ Public Class LinkLabel
     Get
       Return c_LinkVisitedColor
     End Get
-    Set(value As Color)
+    Set(ByVal value As Color)
       c_LinkVisitedColor = value
       RedrawLabel()
     End Set
@@ -164,7 +164,7 @@ Public Class LinkLabel
     Get
       Return MyBase.Font
     End Get
-    Set(value As System.Drawing.Font)
+    Set(ByVal value As System.Drawing.Font)
       MyBase.Font = value
       RedrawLabel()
     End Set
