@@ -667,7 +667,7 @@
   End Function
   Private Function StrToKeys(ByVal sKeys As String) As List(Of Keys)
     Dim cKeys As New List(Of Keys)
-    Dim sKeyList() As String = Split(sKeys)
+    Dim sKeyList As String() = Split(sKeys)
     For Each sKey As String In sKeyList
       Select Case sKey
         Case "A"
