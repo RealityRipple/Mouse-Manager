@@ -24,9 +24,9 @@
   Private loaded As Boolean = False
   Private noWin As Boolean = False
   Private noTray As Boolean = False
-  Private Const HomeURL As String = "//realityripple.com"
-  Private Const PurchaseURL As String = "//realityripple.com/Software/Applications/Advanced-Mouse-Manager/"
-  Private Const DonateURL As String = "//realityripple.com/donate.php?itm=Mouse+Manager"
+  Private Const HomeURL As String = "realityripple.com"
+  Private Const PurchaseURL As String = "realityripple.com/Software/Applications/Advanced-Mouse-Manager/"
+  Private Const DonateURL As String = "realityripple.com/donate.php?itm=Mouse+Manager"
 #Region "Form Events"
   Public Sub New()
     Dim myRegKey As Microsoft.Win32.RegistryKey = GetRegKey(False)
@@ -497,13 +497,13 @@
   End Sub
 #End Region
   Private Sub lblAdvancedWebsite_LinkClicked(ByVal sender As Object, ByVal e As System.Windows.Forms.LinkLabelLinkClickedEventArgs) Handles lblAdvancedWebsite.LinkClicked
-    Process.Start(OSSupport.ProtoURL(PurchaseURL))
+    If e.Button = Windows.Forms.MouseButtons.Left Then OpenURL(PurchaseURL)
   End Sub
   Private Sub cmdDonate_Click(ByVal sender As Object, ByVal e As EventArgs) Handles cmdDonate.Click
-    Process.Start(OSSupport.ProtoURL(DonateURL))
+    OpenURL(DonateURL)
   End Sub
   Private Sub lblWebsite_LinkClicked(ByVal sender As Object, ByVal e As System.Windows.Forms.LinkLabelLinkClickedEventArgs) Handles lblWebsite.LinkClicked
-    Process.Start(OSSupport.ProtoURL(HomeURL))
+    If e.Button = Windows.Forms.MouseButtons.Left Then OpenURL(HomeURL)
   End Sub
 #Region "Save/Close Buttons"
   Private Function ChangesMade() As Boolean
@@ -1409,5 +1409,19 @@
         Return Nothing
     End Select
   End Function
+  Public Sub OpenURL(ByVal sURL As String)
+    Dim sOpen As String = OSSupport.ProtoURL(sURL)
+    Try
+      Process.Start(sOpen)
+    Catch ex As Exception
+      Try
+        Clipboard.SetText(sOpen)
+      Catch ex2 As Exception
+        MsgBox("Failed to open your Browser." & vbNewLine & vbNewLine & My.Application.Info.ProductName & " could not navigate to """ & sURL & """!" & vbNewLine & vbNewLine & ex.Message, MsgBoxStyle.Critical, Application.ProductName)
+        Return
+      End Try
+      MsgBox("Failed to open your Browser." & vbNewLine & vbNewLine & My.Application.Info.ProductName & " could not navigate to """ & sURL & """, so the URL was copied to your clipboard!", MsgBoxStyle.Information, Application.ProductName)
+    End Try
+  End Sub
 #End Region
 End Class

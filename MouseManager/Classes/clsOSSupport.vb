@@ -5,7 +5,11 @@
     Return True
   End Function
   Public Shared Function ProtoURL(ByVal sURL As String) As String
-    If NativeTLS12() Then Return "https:" & sURL
-    Return "http:" & sURL
+    If sURL.Contains(Uri.SchemeDelimiter) Then sURL = sURL.Substring(sURL.IndexOf(Uri.SchemeDelimiter) + Uri.SchemeDelimiter.Length)
+    While sURL.StartsWith("/")
+      sURL = sURL.Substring(1)
+    End While
+    If NativeTLS12() Then Return Uri.UriSchemeHttps & Uri.SchemeDelimiter & sURL
+    Return Uri.UriSchemeHttp & Uri.SchemeDelimiter & sURL
   End Function
 End Class
