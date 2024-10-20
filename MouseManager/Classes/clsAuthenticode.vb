@@ -326,7 +326,7 @@ Public Class Authenticode
     Dim theCertificateChain = New X509Chain(True)
     theCertificateChain.ChainPolicy.RevocationFlag = X509RevocationFlag.EntireChain
     theCertificateChain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck
-    theCertificateChain.ChainPolicy.UrlRetrievalTimeout = New TimeSpan(0, 0, 15)
+    theCertificateChain.ChainPolicy.UrlRetrievalTimeout = New TimeSpan(0, 0, 0, 15, 500)
     theCertificateChain.ChainPolicy.VerificationFlags = X509VerificationFlags.NoFlag
     theCertificateChain.Build(theCertificate)
     Dim Root As X509Certificate2 = theCertificateChain.ChainElements(theCertificateChain.ChainElements.Count - 1).Certificate
@@ -346,7 +346,7 @@ Public Class Authenticode
     Dim theCertificateChain = New X509Chain(True)
     theCertificateChain.ChainPolicy.RevocationFlag = X509RevocationFlag.EntireChain
     theCertificateChain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck
-    theCertificateChain.ChainPolicy.UrlRetrievalTimeout = New TimeSpan(0, 0, 15)
+    theCertificateChain.ChainPolicy.UrlRetrievalTimeout = New TimeSpan(0, 0, 0, 15, 500)
     theCertificateChain.ChainPolicy.VerificationFlags = X509VerificationFlags.NoFlag
     theCertificateChain.Build(theCertificate)
     Dim Signer As X509Certificate2 = theCertificateChain.ChainElements(0).Certificate
