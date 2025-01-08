@@ -581,7 +581,7 @@
       Dim sButton4 As String = lvProfiles.Items(I).Text
       Dim sButton5 As String = lvProfiles.Items(I).SubItems(1).Text
       Dim iChecked As Integer = IIf(lvProfiles.Items(I).Checked, 1, 0)
-      Dim hmd5 As New Security.Cryptography.MD5Cng
+      Dim hmd5 As New Security.Cryptography.HMACMD5
       Dim sAID As String = BitConverter.ToString(hmd5.ComputeHash(System.Text.Encoding.GetEncoding(28591).GetBytes(sButton4 & sButton5)), 0, 4).Replace("-", "")
       savedIDs.Add(sAID)
       cSettings.Profile(sAID) = New cSettings.PROFILEINFO(sAID, sButton4, sButton5)
