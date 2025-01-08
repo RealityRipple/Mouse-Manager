@@ -603,12 +603,12 @@
   End Sub
 #End Region
 #Region "Tray Icon"
-  Private TrayDown As Long = 0
+  Private TrayDown As Long = -1
   Private Sub trayIcon_MouseDown(ByVal sender As Object, ByVal e As MouseEventArgs) Handles trayIcon.MouseDown
     If e.Button = Windows.Forms.MouseButtons.Left Then
       TrayDown = TickCount()
     Else
-      TrayDown = 0
+      TrayDown = -1
     End If
     If mnuProfiles.MenuItems.Count > 0 Then mnuProfiles.MenuItems.Clear()
     Dim mnuNoProfile As New MenuItem("No Profile", AddressOf ProfileItem_Click)
@@ -654,9 +654,9 @@
   End Sub
   Private Sub trayIcon_MouseUp(ByVal sender As Object, ByVal e As MouseEventArgs) Handles trayIcon.MouseUp
     If Not e.Button = Windows.Forms.MouseButtons.Left Then Return
-    If TrayDown = 0 Then Return
-    If TickCount() - TrayDown > 10 Then Return
-    TrayDown = 0
+    If TrayDown = -1 Then Return
+    If TickCount() - TrayDown > 300 Then Return
+    TrayDown = -1
     If Not Me.Visible Then Me.Show()
     Me.Activate()
   End Sub
