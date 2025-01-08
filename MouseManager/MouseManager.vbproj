@@ -121,6 +121,7 @@
     <Compile Include="Classes\clsKeyboardHook.vb" />
     <Compile Include="Classes\clsNativeMethods.vb" />
     <Compile Include="Classes\clsOSSupport.vb" />
+    <Compile Include="Classes\clsSettings.vb" />
     <Compile Include="clsLinkLabel.vb">
       <SubType>Component</SubType>
     </Compile>

@@ -15,24 +15,19 @@
     Press
     Up
   End Enum
-  Private Structure PROFILEINFO
-    Public ID As String
-    Public Button4 As String
-    Public Button5 As String
-  End Structure
-  Private profArr As List(Of PROFILEINFO)
+  Private profArr As List(Of cSettings.PROFILEINFO)
   Private loaded As Boolean = False
   Private noWin As Boolean = False
   Private noTray As Boolean = False
+  Private makingChanges As Boolean = False
   Private Const HomeURL As String = "realityripple.com"
   Private Const PurchaseURL As String = "realityripple.com/Software/Applications/Advanced-Mouse-Manager/"
   Private Const DonateURL As String = "realityripple.com/donate.php?itm=Mouse+Manager"
 #Region "Form Events"
   Public Sub New()
-    Dim myRegKey As Microsoft.Win32.RegistryKey = GetRegKey(False)
     Me.Opacity = 0
     InitializeComponent()
-    If myRegKey IsNot Nothing AndAlso myRegKey.GetValue("HideTray", 0) = 1 Then
+    If cSettings.HideTray Then
       noTray = True
     Else
       trayIcon.Visible = True
@@ -44,30 +39,49 @@
     Dim doInit As Boolean = False
     trayIcon.Icon = My.Resources.Icon
     Me.Icon = My.Resources.Icon
-    chkStart.Checked = My.Computer.Registry.CurrentUser.OpenSubKey("Software").OpenSubKey("Microsoft").OpenSubKey("Windows").OpenSubKey("CurrentVersion").OpenSubKey("Run", True).GetValue("MouseManager", "") = Application.ExecutablePath
+    makingChanges = True
+    If Not cSettings.IsInstalledIsh Then
+      chkStart.ThreeState = False
+      chkStart.Checked = False
+      chkStart.Enabled = False
+    ElseIf cSettings.SomeoneStartsWithWindows Then
+      If cSettings.StartWithWindows Then
+        chkStart.Checked = True
+        chkStart.ThreeState = False
+      Else
+        chkStart.Checked = True
+        chkStart.ThreeState = True
+        chkStart.CheckState = CheckState.Indeterminate
+      End If
+    Else
+      chkStart.Checked = False
+      chkStart.ThreeState = False
+    End If
     LoadProfiles()
     If profArr.Count > 0 Then
-      Dim defID As String = GetSelProfile()
-      For Each prof As PROFILEINFO In profArr
+      Dim defID As String = cSettings.SelectedProfile
+      For Each prof As cSettings.PROFILEINFO In profArr
         Dim lvItem As New ListViewItem
         lvItem.Text = prof.Button4
         lvItem.SubItems.Add(prof.Button5)
-        lvItem.Checked = (prof.ID = defID)
+        If prof.ID = defID Then
+          If cSettings.Enabled Then
+            lvItem.Checked = True
+          Else
+            lvItem.Tag = True
+          End If
+        Else
+          lvItem.Checked = False
+          lvItem.Tag = Nothing
+        End If
         lvProfiles.Items.Add(lvItem)
       Next
       If lvProfiles.Items.Count > 0 Then doInit = True
     End If
-    Dim myRegKey As Microsoft.Win32.RegistryKey = GetRegKey(True)
-    If myRegKey IsNot Nothing Then
-      If myRegKey.GetValue("Enabled", "Unset") = "True" Then
-        myRegKey.SetValue("", 1)
-        myRegKey.DeleteValue("Enabled")
-      End If
-      chkEnable.Checked = (myRegKey.GetValue("", 0) = 1)
-      If chkEnable.Checked Then
-        If mHook Is Nothing Then mHook = New MouseHook()
-        If tDetect Is Nothing Then tDetect = New Threading.Timer(New Threading.TimerCallback(AddressOf tDetect_Tick), Nothing, 0, iDetection)
-      End If
+    chkEnable.Checked = cSettings.Enabled
+    If chkEnable.Checked Then
+      If mHook Is Nothing Then mHook = New MouseHook()
+      If tDetect Is Nothing Then tDetect = New Threading.Timer(New Threading.TimerCallback(AddressOf tDetect_Tick), Nothing, 0, iDetection)
     End If
     cmdSave.Enabled = False
     If doInit Then
@@ -76,6 +90,7 @@
       Me.Opacity = 1
     End If
     cmdRem.Enabled = False
+    makingChanges = False
     loaded = True
   End Sub
   Private Sub tmrInit_Tick(ByVal sender As Object, ByVal e As EventArgs) Handles tmrInit.Tick
@@ -136,10 +151,13 @@
   End Sub
 #Region "Settings"
   Private Sub chkEnable_CheckedChanged(ByVal sender As Object, ByVal e As EventArgs) Handles chkEnable.CheckedChanged
+    If makingChanges Then Return
+    makingChanges = True
     If lvProfiles.Items.Count = 0 Then
       chkEnable.Checked = False
       tbsManager.SelectedTab = tabProfiles
       cmdSave.Enabled = ChangesMade()
+      makingChanges = False
       Return
     End If
     If chkEnable.Checked Then
@@ -151,6 +169,7 @@
               lvItem.Tag = Nothing
             End If
           Next
+          If lvProfiles.CheckedItems.Count = 0 Then lvProfiles.Items(0).Checked = True
         End If
       End If
     Else
@@ -162,36 +181,33 @@
       Next
     End If
     If loaded Then cmdSave.Enabled = ChangesMade()
+    makingChanges = False
   End Sub
   Private Sub chkStart_CheckedChanged(ByVal sender As Object, ByVal e As EventArgs) Handles chkStart.CheckedChanged
+    If Not cSettings.IsInstalledIsh Then
+      chkStart.ThreeState = False
+      chkStart.Checked = False
+      chkStart.Enabled = False
+      Return
+    End If
+    If makingChanges Then Return
+    makingChanges = True
+    If chkStart.ThreeState Then
+      chkStart.ThreeState = False
+      chkStart.Checked = True
+    End If
     If loaded Then cmdSave.Enabled = ChangesMade()
+    makingChanges = False
   End Sub
 #End Region
 #Region "Profiles"
-  Private Function GetSelProfile() As String
-    Dim myRegKey As Microsoft.Win32.RegistryKey = GetRegKey(False)
-    If myRegKey Is Nothing Then Return ""
-    Dim myProfileKey As Microsoft.Win32.RegistryKey = GetRegProfiles(myRegKey, False)
-    If myProfileKey Is Nothing Then Return ""
-    Return myProfileKey.GetValue("", "")
-  End Function
   Private Sub LoadProfiles()
     profArr = Nothing
-    profArr = New List(Of PROFILEINFO)
-    Dim myRegKey As Microsoft.Win32.RegistryKey = GetRegKey(False)
-    If myRegKey Is Nothing Then Return
-    Dim myProfileKey As Microsoft.Win32.RegistryKey = GetRegProfiles(myRegKey, False)
-    If myProfileKey Is Nothing Then Return
-    For Each Key As String In myProfileKey.GetSubKeyNames()
-      Dim profInfo As New PROFILEINFO
-      If Key.StartsWith("Profile") Then
-        profInfo.ID = Key.Substring(7)
-      Else
-        profInfo.ID = Key
-      End If
-      profInfo.Button4 = myProfileKey.OpenSubKey(Key).GetValue("Button4", "PageUp").ToString
-      profInfo.Button5 = myProfileKey.OpenSubKey(Key).GetValue("Button5", "PageDown").ToString
-      profArr.Add(profInfo)
+    profArr = New List(Of cSettings.PROFILEINFO)
+    For Each Key As String In cSettings.ProfileIDs
+      Dim pEntry As cSettings.PROFILEINFO = cSettings.Profile(Key)
+      If pEntry.ID.StartsWith("Profile") Then pEntry.ID = Key.Substring(7)
+      profArr.Add(pEntry)
     Next
   End Sub
   Private Sub lvProfiles_ColumnWidthChanging(ByVal sender As Object, ByVal e As System.Windows.Forms.ColumnWidthChangingEventArgs) Handles lvProfiles.ColumnWidthChanging
@@ -199,14 +215,29 @@
     e.NewWidth = lvProfiles.Columns(e.ColumnIndex).Width
   End Sub
   Private Sub lvProfiles_ItemCheck(ByVal sender As Object, ByVal e As System.Windows.Forms.ItemCheckEventArgs) Handles lvProfiles.ItemCheck
-    If Not e.NewValue = CheckState.Checked Then Return
+    If makingChanges Then Return
+    makingChanges = True
+    If Not e.NewValue = CheckState.Checked Then
+      For I As Integer = 0 To lvProfiles.Items.Count - 1
+        If I = e.Index Then
+          lvProfiles.Items(I).Tag = True
+        Else
+          lvProfiles.Items(I).Tag = Nothing
+        End If
+      Next
+      chkEnable.Checked = False
+      If loaded And Not firstTab Then cmdSave.Enabled = ChangesMade()
+      makingChanges = False
+      Return
+    End If
+    chkEnable.Checked = True
     For I As Integer = 0 To lvProfiles.Items.Count - 1
       If I = e.Index Then Continue For
+      lvProfiles.Items(I).Tag = Nothing
       lvProfiles.Items(I).Checked = False
     Next
-  End Sub
-  Private Sub lvProfiles_ItemChecked(ByVal sender As Object, ByVal e As System.Windows.Forms.ItemCheckedEventArgs) Handles lvProfiles.ItemChecked
     If loaded And Not firstTab Then cmdSave.Enabled = ChangesMade()
+    makingChanges = False
   End Sub
   Private Sub lvProfiles_ItemSelectionChanged(ByVal sender As Object, ByVal e As ListViewItemSelectionChangedEventArgs) Handles lvProfiles.ItemSelectionChanged
     If e.IsSelected Then
@@ -375,8 +406,8 @@
   Private Sub ProcessProfile()
     Dim new4Action As List(Of Keys) = Nothing
     Dim new5Action As List(Of Keys) = Nothing
-    Dim defID As String = GetSelProfile()
-    For Each prof As PROFILEINFO In profArr
+    Dim defID As String = cSettings.SelectedProfile
+    For Each prof As cSettings.PROFILEINFO In profArr
       If Not prof.ID = defID Then Continue For
       new4Action = StrToKeys(prof.Button4)
       new5Action = StrToKeys(prof.Button5)
@@ -507,49 +538,57 @@
   End Sub
 #Region "Save/Close Buttons"
   Private Function ChangesMade() As Boolean
-    Dim myRegKey As Microsoft.Win32.RegistryKey = GetRegKey(False)
-    If myRegKey Is Nothing Then Return True
-    Dim regEnabled As Integer = myRegKey.GetValue("", 0)
-    If regEnabled = 1 And Not chkEnable.Checked Then Return True
-    If regEnabled = 0 And chkEnable.Checked Then Return True
-    If Not chkStart.Checked = My.Computer.Registry.CurrentUser.OpenSubKey("Software").OpenSubKey("Microsoft").OpenSubKey("Windows").OpenSubKey("CurrentVersion").OpenSubKey("Run").GetValueNames.Contains("MouseManager") Then Return True
-    Dim myProfileKey As Microsoft.Win32.RegistryKey = GetRegProfiles(myRegKey, False)
-    If myProfileKey Is Nothing Then
-      If Not lvProfiles.Items.Count = 0 Then Return True
-    Else
-      If Not lvProfiles.Items.Count = myProfileKey.SubKeyCount Then Return True
-      Dim I As Integer = 0
-      For Each Key As String In myProfileKey.GetSubKeyNames()
-        If lvProfiles.Items.Count <= I Then Return True
-        If Not lvProfiles.Items(I).Checked = (myProfileKey.OpenSubKey(Key).GetValue("", 0) = 1) Then Return True
-        If Not lvProfiles.Items(I).Text = myProfileKey.OpenSubKey(Key).GetValue("Button4", "PageUp") And
-           Not lvProfiles.Items(I).Text = myProfileKey.OpenSubKey(Key).GetValue("Button1", "PageUp") Then Return True
-        If Not lvProfiles.Items(I).SubItems(1).Text = myProfileKey.OpenSubKey(Key).GetValue("Button5", "PageDown") And
-           Not lvProfiles.Items(I).SubItems(1).Text = myProfileKey.OpenSubKey(Key).GetValue("Button2", "PageDown") Then Return True
-        I += 1
-      Next
+    If Not chkEnable.Checked = cSettings.Enabled Then Return True
+    If cSettings.IsInstalledIsh Then
+      If chkStart.ThreeState Then
+        If chkStart.CheckState = CheckState.Indeterminate Then
+          If Not cSettings.SomeoneStartsWithWindows Then Return True
+          If cSettings.StartWithWindows Then Return True
+        Else
+          chkStart.ThreeState = False
+        End If
+      End If
+      If Not chkStart.Checked = cSettings.StartWithWindows Then Return True
     End If
+    Dim sIDs As String() = cSettings.ProfileIDs
+    If Not lvProfiles.Items.Count = sIDs.Length Then Return True
+    Dim I As Integer = 0
+    Dim bChecked As Boolean = False
+    For Each Key As String In sIDs
+      If lvProfiles.Items.Count <= I Then Return True
+      Dim pInfo As cSettings.PROFILEINFO = cSettings.Profile(Key)
+      If lvProfiles.Items(I).Checked Then bChecked = True
+      If cSettings.Enabled Then
+        If Not lvProfiles.Items(I).Checked = (cSettings.SelectedProfile = Key) Then Return True
+      Else
+        If cSettings.SelectedProfile = Key Then
+          If Not lvProfiles.Items(I).Tag = True Then Return True
+        Else
+          If Not IsNothing(lvProfiles.Items(I).Tag) Then Return True
+        End If
+      End If
+      If Not lvProfiles.Items(I).Text = pInfo.Button4 Then Return True
+      If Not lvProfiles.Items(I).SubItems(1).Text = pInfo.Button5 Then Return True
+      I += 1
+    Next
     Return False
   End Function
   Private Sub cmdSave_Click(ByVal sender As Object, ByVal e As EventArgs) Handles cmdSave.Click
-    Dim myRegKey As Microsoft.Win32.RegistryKey = GetRegKey(True)
-    myRegKey.SetValue("", IIf(chkEnable.Checked, 1, 0), Microsoft.Win32.RegistryValueKind.DWord)
-    If chkStart.Checked Then
-      My.Computer.Registry.CurrentUser.OpenSubKey("Software").OpenSubKey("Microsoft").OpenSubKey("Windows").OpenSubKey("CurrentVersion").OpenSubKey("Run", True).SetValue("MouseManager", Application.ExecutablePath)
-    Else
-      My.Computer.Registry.CurrentUser.OpenSubKey("Software").OpenSubKey("Microsoft").OpenSubKey("Windows").OpenSubKey("CurrentVersion").OpenSubKey("Run", True).DeleteValue("MouseManager", False)
-    End If
-    DelRegProfiles(myRegKey)
-    Dim myProfileKey As Microsoft.Win32.RegistryKey = GetRegProfiles(myRegKey, True)
+    cSettings.Enabled = chkEnable.Checked
+    If cSettings.IsInstalledIsh AndAlso Not chkStart.ThreeState Then cSettings.StartWithWindows = chkStart.Checked
+    Dim savedIDs As New List(Of String)
     For I As Integer = 0 To lvProfiles.Items.Count - 1
       Dim sButton4 As String = lvProfiles.Items(I).Text
       Dim sButton5 As String = lvProfiles.Items(I).SubItems(1).Text
       Dim iChecked As Integer = IIf(lvProfiles.Items(I).Checked, 1, 0)
       Dim hmd5 As New Security.Cryptography.MD5Cng
       Dim sAID As String = BitConverter.ToString(hmd5.ComputeHash(System.Text.Encoding.GetEncoding(28591).GetBytes(sButton4 & sButton5)), 0, 4).Replace("-", "")
-      myProfileKey.CreateSubKey("Profile" & sAID).SetValue("Button4", sButton4, Microsoft.Win32.RegistryValueKind.String)
-      myProfileKey.CreateSubKey("Profile" & sAID).SetValue("Button5", sButton5, Microsoft.Win32.RegistryValueKind.String)
-      If iChecked Then myProfileKey.SetValue("", sAID)
+      savedIDs.Add(sAID)
+      cSettings.Profile(sAID) = New cSettings.PROFILEINFO(sAID, sButton4, sButton5)
+      If iChecked Then cSettings.SelectedProfile = sAID
+    Next
+    For Each pID As String In cSettings.ProfileIDs
+      If Not savedIDs.Contains(pID) Then cSettings.RemoveProfile(pID)
     Next
     cmdSave.Enabled = False
     ResizeProfileColumns()
@@ -629,39 +668,6 @@
   End Sub
 #End Region
 #Region "Helpful Routines"
-  Private Function GetRegKey(ByVal WriteEnabled As Boolean) As Microsoft.Win32.RegistryKey
-    If WriteEnabled Then
-      If Not My.Computer.Registry.CurrentUser.OpenSubKey("Software").GetSubKeyNames.Contains(Application.CompanyName) Then My.Computer.Registry.CurrentUser.OpenSubKey("Software", True).CreateSubKey(Application.CompanyName)
-      If Not My.Computer.Registry.CurrentUser.OpenSubKey("Software").OpenSubKey(Application.CompanyName).GetSubKeyNames.Contains(Application.ProductName) Then My.Computer.Registry.CurrentUser.OpenSubKey("Software", True).OpenSubKey(Application.CompanyName, True).CreateSubKey(Application.ProductName)
-      Return My.Computer.Registry.CurrentUser.OpenSubKey("Software", True).OpenSubKey(Application.CompanyName, True).OpenSubKey(Application.ProductName, True)
-    Else
-      If My.Computer.Registry.CurrentUser.OpenSubKey("Software").GetSubKeyNames.Contains(Application.CompanyName) Then
-        If My.Computer.Registry.CurrentUser.OpenSubKey("Software").OpenSubKey(Application.CompanyName).GetSubKeyNames.Contains(Application.ProductName) Then
-          Return My.Computer.Registry.CurrentUser.OpenSubKey("Software").OpenSubKey(Application.CompanyName).OpenSubKey(Application.ProductName)
-        End If
-      End If
-      Return Nothing
-    End If
-  End Function
-  Private Function GetRegProfiles(ByVal myRegKey As Microsoft.Win32.RegistryKey, ByVal writeEnabled As Boolean) As Microsoft.Win32.RegistryKey
-    Const sProfiles As String = "Profiles"
-    If writeEnabled Then
-      If myRegKey.SubKeyCount = 0 Then myRegKey.CreateSubKey(sProfiles)
-      If Not myRegKey.GetSubKeyNames.Contains(sProfiles) Then myRegKey.CreateSubKey(sProfiles)
-      Return myRegKey.OpenSubKey(sProfiles, True)
-    Else
-      If myRegKey.SubKeyCount > 0 Then
-        If myRegKey.GetSubKeyNames.Contains(sProfiles) Then
-          Return myRegKey.OpenSubKey(sProfiles)
-        End If
-      End If
-      Return Nothing
-    End If
-  End Function
-  Private Sub DelRegProfiles(ByVal myRegKey As Microsoft.Win32.RegistryKey)
-    Const sProfiles As String = "Profiles"
-    If myRegKey.SubKeyCount > 0 AndAlso myRegKey.GetSubKeyNames.Contains(sProfiles) Then myRegKey.DeleteSubKeyTree(sProfiles)
-  End Sub
   Private Shared Function TickCount() As Long
     Return (Stopwatch.GetTimestamp / Stopwatch.Frequency) * 1000
   End Function
